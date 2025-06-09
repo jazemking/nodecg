@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Combined Output</title>
+  <style>
+    html, body {
+      margin: 0; padding: 0; width: 100%; height: 100%; background: transparent;
+      overflow: hidden;
+      position: relative;
+      font-family: Arial, sans-serif;
+    }
+    iframe {
+      border: none;
+      position: absolute;
+      /* Adjust width/height for each bundle’s graphic resolution */
+      width: 480px;  /* example size */
+      height: 270px; /* example size */
+    }
+
+    /* Position lowerthird bottom left */
+    #lowerthird {
+      left: 20px;
+      bottom: 20px;
+      width: 900px;  /* adjust as needed */
+      height: 550px; /* adjust as needed */
+      /* Optional border to see iframe edges */
+      /* border: 2px solid red; */
+    }
+
+    /* Position topleftgraphic top right */
+    #topleftgraphic {
+      right: 20px;
+      top: 20px;
+      width: 320px;  /* adjust as needed */
+      height: 180px; /* adjust as needed */
+      /* border: 2px solid blue; */
+    }
+  </style>
+</head>
+<body>
+  <iframe id="lowerthird" src="../../lowerthird/graphics/index.html" allowtransparency="true"></iframe>
+  <iframe id="topleftgraphic" src="../../topleftgraphic/graphics/index.html" allowtransparency="true"></iframe>
+</body>
+</html>

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Top Right Graphic Control</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 10px;
+    }
+    input {
+      width: 100%;
+      padding: 6px;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+  <h2>Top Right Text</h2>
+  <input type="text" id="textInput" placeholder="Enter live status...">
+  <script src="../../../shared/nodecg.bundle.js"></script>
+  <script>
+    const textRep = nodecg.Replicant('topleft_text');
+
+    const input = document.getElementById('textInput');
+
+    textRep.on('change', val => {
+      input.value = val || '';
+    });
+
+    input.addEventListener('input', e => {
+      textRep.value = e.target.value;
+    });
+  </script>
+</body>
+</html>

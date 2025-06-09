@@ -1,0 +1,27 @@
+{
+  "name": "topleftgraphic",
+  "version": "1.0.0",
+  "description": "Top-right corner live graphic",
+  "main": "extension.js",
+  "license": "MIT",
+  "nodecg": {
+    "compatibleRange": "^2.0.0",
+    "dashboardPanels": [
+      {
+        "title": "Top Right Graphic Control",
+        "name": "topleftgraphic-panel",
+        "file": "panel.html",
+        "width": 6,
+        "height": 4
+      }
+    ],
+    "graphics": [
+      {
+        "file": "index.html",
+        "width": 1920,
+        "height": 1080,
+        "name": "topleftgraphic-display"
+      }
+    ]
+  }
+}

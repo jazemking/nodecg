@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Top Right Graphic</title>
+  <style>
+    body {
+      margin: 0;
+      background: transparent;
+      font-family: Arial, sans-serif;
+    }
+    .graphic-box {
+      position: absolute;
+      top: 30px;
+      right: 30px;
+      background-color: rgba(0, 0, 0, 0.7);
+      color: white;
+      padding: 15px 25px;
+      border-radius: 12px;
+      font-size: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="graphic-box" id="displayText">Live Status</div>
+  <script src="../../../shared/nodecg.bundle.js"></script>
+  <script>
+    const textRep = nodecg.Replicant('topleft_text');
+
+    textRep.on('change', newVal => {
+      document.getElementById('displayText').textContent = newVal || '';
+    });
+  </script>
+</body>
+</html>
