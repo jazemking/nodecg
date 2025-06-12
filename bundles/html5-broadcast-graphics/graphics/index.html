@@ -863,6 +863,37 @@
             .intro-title { font-size: 64px; }
             .intro-subtitle { font-size: 28px; }
         }
+
+        /* Debug info for development */
+        .debug-info {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            color: #00ff88;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            font-family: monospace;
+            z-index: 1000;
+            max-width: 300px;
+        }
+
+        .debug-info div {
+            margin-bottom: 5px;
+        }
+
+        .debug-info .status-ok {
+            color: #00ff88;
+        }
+
+        .debug-info .status-error {
+            color: #ff3333;
+        }
+
+        .debug-info .status-warning {
+            color: #ffaa00;
+        }
     </style>
 </head>
 <body>
@@ -874,6 +905,20 @@
             <!-- Graphics container -->
             <div id="graphics-container"></div>
         </div>
+
+        <!-- Debug info (only visible when needed) -->
+        <div id="debug-info" class="debug-info" style="display: none;">
+            <div><strong>NodeCG Graphics Debug</strong></div>
+            <div id="debug-nodecg">NodeCG: <span class="status-error">Not Connected</span></div>
+            <div id="debug-graphics">Active Graphics: <span id="debug-graphics-count">0</span></div>
+            <div id="debug-regions">Regions: <span id="debug-regions-status">Hidden</span></div>
+            <div id="debug-mode">Mode: <span id="debug-mode-status">Standalone</span></div>
+            <div style="margin-top: 10px; font-size: 10px; opacity: 0.7;">
+                Press 'D' to toggle debug info<br>
+                Press 'T' to test ticker<br>
+                Press 'R' to toggle regions
+            </div>
+        </div>
     </div>
 
     <script>
@@ -881,6 +926,8 @@
         let activeGraphics = [];
         let showRegions = false;
         let graphicsData = {};
+        let isNodeCGConnected = false;
+        let debugMode = false;
 
         // Region definitions matching Flowics layout - ADDED REGION-N4
         const regions = [
@@ -932,34 +979,153 @@
             }
         };
 
-        // Initialize NodeCG integration
+        // Initialize NodeCG integration with fallback
         function initializeNodeCG() {
+            console.log('Initializing NodeCG connection...');
+            
             if (typeof nodecg !== 'undefined') {
-                const activeGraphicsRep = nodecg.Replicant('activeGraphics');
-                const showRegionsRep = nodecg.Replicant('showRegions');
-                const graphicsDataRep = nodecg.Replicant('graphicsData');
+                try {
+                    const activeGraphicsRep = nodecg.Replicant('activeGraphics');
+                    const showRegionsRep = nodecg.Replicant('showRegions');
+                    const graphicsDataRep = nodecg.Replicant('graphicsData');
 
-                activeGraphicsRep.on('change', (newValue) => {
-                    activeGraphics = newValue || [];
-                    updateGraphics();
-                });
+                    // Wait for replicants to be ready
+                    Promise.all([
+                        new Promise(resolve => activeGraphicsRep.on('declared', resolve)),
+                        new Promise(resolve => showRegionsRep.on('declared', resolve)),
+                        new Promise(resolve => graphicsDataRep.on('declared', resolve))
+                    ]).then(() => {
+                        console.log('NodeCG replicants ready');
+                        isNodeCGConnected = true;
+                        updateDebugInfo();
 
-                showRegionsRep.on('change', (newValue) => {
-                    showRegions = newValue || false;
-                    updateRegions();
-                });
+                        activeGraphicsRep.on('change', (newValue) => {
+                            console.log('Active graphics changed:', newValue);
+                            activeGraphics = newValue || [];
+                            updateGraphics();
+                            updateDebugInfo();
+                        });
 
-                graphicsDataRep.on('change', (newValue) => {
-                    graphicsData = newValue || {};
-                    updateGraphics();
-                });
+                        showRegionsRep.on('change', (newValue) => {
+                            console.log('Show regions changed:', newValue);
+                            showRegions = newValue || false;
+                            updateRegions();
+                            updateDebugInfo();
+                        });
 
-                // Set initial values
-                activeGraphics = activeGraphicsRep.value || [];
-                showRegions = showRegionsRep.value || false;
-                graphicsData = graphicsDataRep.value || {};
+                        graphicsDataRep.on('change', (newValue) => {
+                            console.log('Graphics data changed:', newValue);
+                            graphicsData = newValue || {};
+                            updateGraphics();
+                        });
+
+                        // Set initial values
+                        activeGraphics = activeGraphicsRep.value || [];
+                        showRegions = showRegionsRep.value || false;
+                        graphicsData = graphicsDataRep.value || {};
+                        
+                        console.log('Initial state:', { activeGraphics, showRegions, graphicsData });
+                        updateGraphics();
+                        updateRegions();
+                        updateDebugInfo();
+                    });
+
+                } catch (error) {
+                    console.error('Error initializing NodeCG:', error);
+                    initializeFallbackMode();
+                }
             } else {
                 console.log('NodeCG not available, running in standalone mode');
+                initializeFallbackMode();
+            }
+        }
+
+        // Fallback mode for testing without NodeCG
+        function initializeFallbackMode() {
+            console.log('Initializing fallback mode...');
+            isNodeCGConnected = false;
+            
+            // Set default data for testing
+            graphicsData = {
+                topBar: {
+                    logo: 'F',
+                    title: 'FLOWICS SPORTS',
+                    live: true
+                },
+                logo: {
+                    icon: 'F',
+                    text: 'LIVE'
+                },
+                score: {
+                    homeTeam: 'EAGLES',
+                    awayTeam: 'LIONS',
+                    homeScore: 24,
+                    awayScore: 17,
+                    time: '12:45',
+                    period: '3rd Quarter'
+                },
+                social: {
+                    platform: 'twitter',
+                    username: 'SportsFan',
+                    handle: '@sportsfan2024',
+                    avatar: 'SF',
+                    message: 'What an incredible play! This game is going to be remembered for years to come. #ChampionshipFinal #GameOfTheCentury'
+                },
+                lowerThird: {
+                    title: 'Championship Final Tonight',
+                    subtitle: 'Two powerhouse teams clash in what promises to be the game of the century',
+                    person: 'Sarah Johnson, Sports Analyst',
+                    location: 'Madison Square Garden, New York'
+                },
+                ticker: {
+                    items: [
+                        'Breaking: Major trade deal announced between leading tech companies',
+                        'Weather Alert: Severe thunderstorm warning issued for metropolitan area',
+                        'Sports Update: Championship finals set for this weekend at the arena',
+                        'Market News: Stock market reaches new highs amid economic optimism'
+                    ]
+                },
+                fullscreen: {
+                    logo: 'F',
+                    title: 'CHAMPIONSHIP COVERAGE',
+                    subtitle: 'Live from Madison Square Garden'
+                }
+            };
+
+            // Show some graphics by default for testing
+            activeGraphics = ['news-ticker'];
+            showRegions = false;
+            
+            updateGraphics();
+            updateRegions();
+            updateDebugInfo();
+        }
+
+        // Update debug information
+        function updateDebugInfo() {
+            if (!debugMode) return;
+
+            const debugNodeCG = document.getElementById('debug-nodecg');
+            const debugGraphicsCount = document.getElementById('debug-graphics-count');
+            const debugRegionsStatus = document.getElementById('debug-regions-status');
+            const debugModeStatus = document.getElementById('debug-mode-status');
+
+            if (debugNodeCG) {
+                debugNodeCG.innerHTML = isNodeCGConnected ? 
+                    'NodeCG: <span class="status-ok">Connected</span>' : 
+                    'NodeCG: <span class="status-error">Not Connected</span>';
+            }
+
+            if (debugGraphicsCount) {
+                debugGraphicsCount.textContent = activeGraphics.length;
+            }
+
+            if (debugRegionsStatus) {
+                debugRegionsStatus.textContent = showRegions ? 'Visible' : 'Hidden';
+            }
+
+            if (debugModeStatus) {
+                debugModeStatus.textContent = isNodeCGConnected ? 'NodeCG' : 'Standalone';
             }
         }
 
@@ -992,9 +1158,14 @@
             const container = document.getElementById('graphics-container');
             container.innerHTML = '';
 
+            console.log('Updating graphics:', activeGraphics);
+
             activeGraphics.forEach(graphicId => {
                 const template = graphicTemplates[graphicId];
-                if (!template) return;
+                if (!template) {
+                    console.warn('Template not found for graphic:', graphicId);
+                    return;
+                }
 
                 const graphic = createGraphic(graphicId, template);
                 if (graphic) {
@@ -1006,6 +1177,8 @@
                     }, 50);
                 }
             });
+
+            updateDebugInfo();
         }
 
         // Create graphic element
@@ -1275,12 +1448,78 @@
             return div;
         }
 
+        // Keyboard shortcuts for testing
+        document.addEventListener('keydown', (e) => {
+            switch (e.key.toLowerCase()) {
+                case 'd':
+                    debugMode = !debugMode;
+                    document.getElementById('debug-info').style.display = debugMode ? 'block' : 'none';
+                    updateDebugInfo();
+                    break;
+                case 't':
+                    // Test ticker
+                    if (!activeGraphics.includes('news-ticker')) {
+                        activeGraphics.push('news-ticker');
+                    } else {
+                        activeGraphics = activeGraphics.filter(id => id !== 'news-ticker');
+                    }
+                    updateGraphics();
+                    break;
+                case 'r':
+                    // Toggle regions
+                    showRegions = !showRegions;
+                    updateRegions();
+                    updateDebugInfo();
+                    break;
+                case '1':
+                    // Test top bar
+                    if (!activeGraphics.includes('top-bar')) {
+                        activeGraphics.push('top-bar');
+                    } else {
+                        activeGraphics = activeGraphics.filter(id => id !== 'top-bar');
+                    }
+                    updateGraphics();
+                    break;
+                case '2':
+                    // Test lower third
+                    if (!activeGraphics.includes('lower-third')) {
+                        activeGraphics.push('lower-third');
+                    } else {
+                        activeGraphics = activeGraphics.filter(id => id !== 'lower-third');
+                    }
+                    updateGraphics();
+                    break;
+                case '3':
+                    // Test score box
+                    if (!activeGraphics.includes('score-box')) {
+                        activeGraphics.push('score-box');
+                    } else {
+                        activeGraphics = activeGraphics.filter(id => id !== 'score-box');
+                    }
+                    updateGraphics();
+                    break;
+            }
+        });
+
         // Initialize the application
         document.addEventListener('DOMContentLoaded', () => {
+            console.log('DOM loaded, initializing application...');
             initializeNodeCG();
-            updateRegions();
-            updateGraphics();
+            
+            // Show debug info by default in development
+            if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                debugMode = true;
+                document.getElementById('debug-info').style.display = 'block';
+                updateDebugInfo();
+            }
         });
+
+        // Log any errors
+        window.addEventListener('error', (e) => {
+            console.error('JavaScript error:', e.error);
+        });
+
+        console.log('Graphics script loaded successfully');
     </script>
 </body>
 </html>
