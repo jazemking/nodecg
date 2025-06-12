@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flowics Graphics Clone - NodeCG Output</title>
+    <title>Flowics-Style Broadcast Graphics</title>
     <style>
         /* Reset and base styles */
         * {
@@ -12,1121 +12,749 @@
             box-sizing: border-box;
         }
 
-        body, html {
-            width: 1920px;
-            height: 1080px;
+        html, body {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background: transparent;
+            font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+
+        /* RESPONSIVE VIEWPORT SYSTEM - Uses viewport units for true responsiveness */
+        .graphics-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
             background: transparent;
             overflow: hidden;
-            font-family: 'Roboto', 'Arial', sans-serif;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
         }
 
-        #root {
-            width: 100%;
-            height: 100%;
-            background: transparent;
-            position: relative;
-        }
-
-        /* Graphics Container */
-        .graphics-container {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-        }
-
-        /* Region debugging */
+        /* Region debugging styles */
         .region {
             position: absolute;
             transition: all 0.3s ease;
-            border: 2px dashed transparent;
+            pointer-events: none;
         }
 
         .region-debug {
-            border-color: #00ff88;
+            border: 0.2vw dashed #00ff88;
             background: rgba(0, 255, 136, 0.1);
+            z-index: 1000;
         }
 
         .region-debug.active {
-            border-color: #ff6b35;
-            background: rgba(255, 107, 53, 0.15);
+            border-color: #ff3333;
+            background: rgba(255, 51, 51, 0.1);
         }
 
         .region-label {
             position: absolute;
-            top: -25px;
+            top: -1.5vh;
             left: 0;
             background: #00ff88;
-            color: #000;
-            padding: 2px 8px;
-            font-size: 11px;
-            font-weight: 600;
-            border-radius: 3px;
-            font-family: 'Roboto', sans-serif;
+            color: #1a1a2e;
+            padding: 0.3vh 0.6vw;
+            font-size: 0.7vw;
+            font-weight: 700;
+            border-radius: 0.3vw;
+            text-transform: uppercase;
+            letter-spacing: 0.02vw;
+            white-space: nowrap;
         }
 
         .region-debug.active .region-label {
-            background: #ff6b35;
-            color: #fff;
+            background: #ff3333;
+            color: white;
         }
 
-        /* Lower Third - Flowics Style */
+        /* TOP BAR - Responsive viewport positioning */
+        .top-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 7.4vh; /* 80px / 1080px = 7.4% */
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 3.1vw; /* 60px / 1920px = 3.1% */
+            z-index: 50;
+            transition: all 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .top-bar.slide-in-top {
+            transform: translateY(-100%);
+        }
+
+        .top-bar.visible {
+            transform: translateY(0);
+        }
+
+        .top-bar-left {
+            display: flex;
+            align-items: center;
+            gap: 1.6vw; /* 30px / 1920px = 1.6% */
+        }
+
+        .top-bar-logo {
+            width: 2.6vw; /* 50px / 1920px = 2.6% */
+            height: 4.6vh; /* 50px / 1080px = 4.6% */
+            background: #00ff88;
+            color: #1a1a2e;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 1.25vw;
+        }
+
+        .top-bar-title {
+            color: #ffffff;
+            font-size: 1.25vw;
+            font-weight: 700;
+            letter-spacing: 0.1vw;
+        }
+
+        .top-bar-right {
+            display: flex;
+            align-items: center;
+            gap: 1vw;
+        }
+
+        .live-indicator {
+            background: #ff3333;
+            color: white;
+            padding: 0.7vh 0.8vw;
+            border-radius: 1.3vw;
+            font-size: 0.8vw;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05vw;
+            animation: pulse 2s infinite;
+        }
+
+        /* CORNER LOGO - Responsive viewport positioning */
+        .corner-logo {
+            position: absolute;
+            top: 2.8vh; /* 30px / 1080px = 2.8% */
+            left: 1.6vw; /* 30px / 1920px = 1.6% */
+            width: 5.2vw; /* 100px / 1920px = 5.2% */
+            height: 9.3vh; /* 100px / 1080px = 9.3% */
+            background: rgba(26, 26, 46, 0.9);
+            border: 0.16vw solid #00ff88;
+            border-radius: 0.8vw;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 40;
+            transition: all 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .corner-logo.scale-in {
+            transform: scale(0);
+            opacity: 0;
+        }
+
+        .corner-logo.visible {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        .corner-logo-icon {
+            color: #00ff88;
+            font-size: 1.67vw;
+            font-weight: 900;
+            margin-bottom: 0.6vh;
+        }
+
+        .corner-logo-text {
+            color: #ffffff;
+            font-size: 0.63vw;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.03vw;
+        }
+
+        /* SCORE BOX - Responsive viewport positioning */
+        .score-box {
+            position: absolute;
+            top: 2.8vh; /* 30px / 1080px = 2.8% */
+            right: 1.6vw; /* 30px / 1920px = 1.6% */
+            width: 18.2vw; /* 350px / 1920px = 18.2% */
+            background: rgba(26, 26, 46, 0.95);
+            border: 0.16vw solid #00ff88;
+            border-radius: 0.8vw;
+            overflow: hidden;
+            z-index: 40;
+            transition: all 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .score-box.slide-in-right {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+
+        .score-box.visible {
+            transform: translateX(0);
+            opacity: 1;
+        }
+
+        .score-header {
+            background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);
+            color: #1a1a2e;
+            padding: 1.1vh 1vw;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.83vw;
+            font-weight: 700;
+        }
+
+        .score-body {
+            padding: 1.85vh 1vw;
+        }
+
+        .score-team {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.4vh;
+            color: #ffffff;
+        }
+
+        .score-team:last-child {
+            margin-bottom: 0;
+        }
+
+        .team-name {
+            font-weight: 700;
+            font-size: 0.94vw;
+        }
+
+        .team-score {
+            font-size: 1.67vw;
+            font-weight: 900;
+            color: #00ff88;
+        }
+
+        /* SOCIAL CARD - Responsive viewport positioning */
+        .social-card {
+            position: absolute;
+            top: 37vh; /* 400px / 1080px = 37% */
+            right: 1.6vw; /* 30px / 1920px = 1.6% */
+            width: 20.8vw; /* 400px / 1920px = 20.8% */
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 0.8vw;
+            padding: 2.3vh 1.3vw;
+            box-shadow: 0 0.9vh 3.7vh rgba(0, 0, 0, 0.3);
+            z-index: 30;
+            transition: all 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .social-card.slide-in-right {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+
+        .social-card.visible {
+            transform: translateX(0);
+            opacity: 1;
+        }
+
+        .social-header {
+            height: 0.56vh;
+            background: linear-gradient(90deg, #1da1f2, #0d8bd9);
+            border-radius: 0.16vw;
+            margin-bottom: 1.85vh;
+        }
+
+        .social-content {
+            display: flex;
+            gap: 0.78vw;
+        }
+
+        .social-avatar {
+            width: 3.1vw;
+            height: 5.6vh;
+            background: #00ff88;
+            color: #1a1a2e;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 1.25vw;
+            flex-shrink: 0;
+        }
+
+        .social-text {
+            flex: 1;
+        }
+
+        .social-username {
+            font-weight: 700;
+            color: #1a1a2e;
+            font-size: 0.94vw;
+            margin-bottom: 0.46vh;
+        }
+
+        .social-handle {
+            color: #666;
+            font-size: 0.73vw;
+            margin-bottom: 0.93vh;
+        }
+
+        .social-message {
+            color: #333;
+            font-size: 0.83vw;
+            line-height: 1.4;
+            margin-bottom: 1.4vh;
+        }
+
+        .social-stats {
+            display: flex;
+            gap: 1vw;
+            color: #666;
+            font-size: 0.73vw;
+        }
+
+        /* LOWER THIRD - Responsive viewport positioning */
         .lower-third {
             position: absolute;
-            bottom: 8%;
+            bottom: 13.9vh; /* 150px / 1080px = 13.9% */
             left: 0;
-            width: 100%;
-            height: auto;
-            display: flex;
-            align-items: flex-end;
-            z-index: 15;
+            width: 100vw;
+            z-index: 20;
+            transition: all 0.7s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .lower-third-container {
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-            border-top: 4px solid #00ff88;
-            width: 100%;
-            max-width: 85%;
-            position: relative;
-            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.4);
+        .lower-third.slide-in-left {
+            transform: translateX(-100%);
+        }
+
+        .lower-third.visible {
+            transform: translateX(0);
         }
 
         .lower-third-content {
-            padding: 24px 40px;
-            position: relative;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            display: flex;
+            max-width: 52.1vw; /* 1000px / 1920px = 52.1% */
+        }
+
+        .lower-third-accent {
+            width: 0.42vw; /* 8px / 1920px = 0.42% */
+            background: linear-gradient(to bottom, #00ff88, #00cc6a);
+        }
+
+        .lower-third-text {
+            padding: 2.8vh 2.1vw;
+            flex: 1;
         }
 
         .lower-third-title {
-            font-size: 42px;
+            font-size: 1.67vw;
             font-weight: 700;
             color: #ffffff;
-            margin-bottom: 8px;
-            line-height: 1.1;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-            font-family: 'Roboto', sans-serif;
+            margin-bottom: 0.93vh;
+            line-height: 1.2;
         }
 
         .lower-third-subtitle {
-            font-size: 24px;
+            font-size: 1.04vw;
             color: #e0e6ed;
-            margin-bottom: 12px;
-            line-height: 1.3;
-            font-weight: 400;
-            font-family: 'Roboto', sans-serif;
+            margin-bottom: 1.4vh;
+            line-height: 1.4;
         }
 
         .lower-third-meta {
             display: flex;
-            gap: 30px;
-            color: #b8c5d1;
-            font-size: 16px;
-            font-weight: 500;
+            gap: 1.3vw;
+            color: #a0a6ad;
+            font-size: 0.83vw;
         }
 
         .lower-third-meta-item {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 0.42vw;
         }
 
-        .lower-third-accent {
-            position: absolute;
-            right: 0;
-            top: 0;
-            bottom: 0;
-            width: 6px;
-            background: linear-gradient(to bottom, #00ff88, #00cc6a);
-        }
-
-        /* Top Bar - Flowics Style */
-        .top-bar {
-            position: absolute;
-            top: 6%;
-            left: 0;
-            right: 0;
-            height: 60px;
-            background: linear-gradient(90deg, #1a1a2e 0%, rgba(26, 26, 46, 0.95) 70%, transparent 100%);
-            border-bottom: 3px solid #00ff88;
-            display: flex;
-            align-items: center;
-            padding: 0 40px;
-            z-index: 20;
-        }
-
-        .top-bar-logo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            color: #ffffff;
-            font-size: 20px;
-            font-weight: 700;
-            font-family: 'Roboto', sans-serif;
-        }
-
-        .top-bar-logo-icon {
-            width: 32px;
-            height: 32px;
-            background: #00ff88;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #1a1a2e;
-            font-weight: 900;
-        }
-
-        .top-bar-live {
-            margin-left: auto;
-            background: #ff3333;
-            color: #ffffff;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 14px;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            animation: pulse 2s infinite;
-        }
-
-        .live-dot {
-            width: 8px;
-            height: 8px;
-            background: #ffffff;
-            border-radius: 50%;
-            animation: blink 1s infinite;
-        }
-
-        /* Score Box - Flowics Style */
-        .score-box {
-            position: absolute;
-            top: 12%;
-            right: 4%;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            border: 2px solid #00ff88;
-            border-radius: 12px;
-            padding: 20px;
-            min-width: 280px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-            z-index: 10;
-        }
-
-        .score-header {
-            text-align: center;
-            color: #00ff88;
-            font-size: 14px;
-            font-weight: 600;
-            margin-bottom: 16px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .score-teams {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
-        }
-
-        .team {
-            text-align: center;
-            flex: 1;
-        }
-
-        .team-name {
-            color: #ffffff;
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 8px;
-        }
-
-        .team-score {
-            color: #00ff88;
-            font-size: 36px;
-            font-weight: 900;
-            font-family: 'Roboto Mono', monospace;
-        }
-
-        .score-vs {
-            color: #b8c5d1;
-            font-size: 16px;
-            font-weight: 600;
-            margin: 0 20px;
-        }
-
-        .score-time {
-            text-align: center;
-            color: #e0e6ed;
-            font-size: 14px;
-            border-top: 1px solid #2a2a4e;
-            padding-top: 12px;
-        }
-
-        /* REGION-N4 NEWS TICKER - EXACT FLOWICS POSITIONING */
+        /* NEWS TICKER - RESPONSIVE VIEWPORT POSITIONING */
         .news-ticker {
-            cursor: default;
-            display: block;
             position: absolute;
-            width: 100%;
-            height: 8%;
-            top: 92%;
-            left: 0%;
-            transform: rotate(0deg);
-            background-image: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0));
-            background-size: auto;
-            background-position: 0% 0%;
-            background-repeat: no-repeat;
-            background-clip: border-box;
-            z-index: 9;
-            direction: inherit;
-        }
-
-        /* Rectangle-n101 - Main black background */
-        .ticker-main-bg {
-            cursor: default;
-            display: block;
-            position: absolute;
-            width: 100%;
-            height: 75%;
-            top: 0%;
-            left: 0%;
-            transform: rotate(0deg);
-            border-width: 0px;
-            border-style: none;
-            border-color: rgb(0, 0, 0);
-            border-radius: 0px;
-            background-image: linear-gradient(rgb(0, 0, 0), rgb(0, 0, 0));
-            background-size: auto;
-            background-position: 0% 0%;
-            background-repeat: no-repeat;
-            background-clip: border-box;
-            opacity: 1;
-            z-index: 12;
-            direction: inherit;
-        }
-
-        /* Container-n103 - Right section with NEWS UPDATE */
-        .ticker-right-container {
-            cursor: default;
-            display: block;
-            position: absolute;
-            width: 18%;
-            height: 75%;
-            top: 0%;
-            left: 82%;
-            transform: rotate(0deg);
-            border-width: 1px;
-            border-style: none;
-            border-color: rgb(255, 0, 3);
-            border-radius: 0px;
-            background-image: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0));
-            background-size: auto;
-            background-position: 0% 0%;
-            background-repeat: no-repeat;
-            background-clip: border-box;
-            opacity: 1;
-            z-index: 13;
-            direction: inherit;
-        }
-
-        /* Rectangle-n112 - Yellow background */
-        .ticker-right-yellow {
-            cursor: default;
-            display: block;
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            top: 0%;
-            left: 0%;
-            transform: rotate(0deg);
-            border-width: 0px;
-            border-style: none;
-            border-color: rgb(0, 0, 0);
-            border-radius: 0px;
-            background-image: linear-gradient(rgb(255, 207, 0), rgb(255, 207, 0));
-            background-size: auto;
-            background-position: 0% 0%;
-            background-repeat: no-repeat;
-            background-clip: border-box;
-            opacity: 1;
-            z-index: 3;
-            direction: inherit;
-        }
-
-        /* Rectangle-n105 - White overlay */
-        .ticker-right-white {
-            cursor: default;
-            display: block;
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            top: 0%;
-            left: 0%;
-            transform: rotate(0deg);
-            border-width: 0px;
-            border-style: none;
-            border-color: rgb(0, 0, 0);
-            border-radius: 0px;
-            background-image: linear-gradient(rgb(255, 255, 255), rgb(255, 255, 255));
-            background-size: auto;
-            background-position: 0% 0%;
-            background-repeat: no-repeat;
-            background-clip: border-box;
-            opacity: 1;
-            z-index: 2;
-            direction: inherit;
-        }
-
-        /* Text-n106 - NEWS UPDATE text - CRITICAL FIX: PROPER CENTERING */
-        .ticker-right-text {
-            cursor: default;
-            display: flex;
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            top: 0%;
-            left: 0%;
-            transform: rotate(0deg);
-            opacity: 1;
-            z-index: 15;
-            direction: inherit;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .ticker-right-text-content {
-            font-family: Barlow, sans-serif;
-            font-weight: 700;
-            font-style: normal;
-            text-align: center;
-            color: rgb(20, 20, 20);
-            line-height: 1.2;
-            text-transform: uppercase;
-            font-size: 28px;
+            bottom: 7.4vh; /* 80px / 1080px = 7.4% - FIXED POSITION FROM BOTTOM */
+            left: 0;
+            width: 100vw;
+            height: 5.6vh; /* 60px / 1080px = 5.6% */
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
             display: flex;
             align-items: center;
-            justify-content: center;
-            width: 100%;
-            height: 100%;
+            z-index: 60;
+            transition: all 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+            border-top: 0.28vh solid #00ff88;
         }
 
-        /* Container-n107 - Left section with K24NEWS.COM */
-        .ticker-left-container {
-            cursor: default;
-            display: block;
-            position: absolute;
-            width: 15%;
-            height: 75%;
-            top: 0%;
-            left: 0%;
-            transform: rotate(0deg);
-            border-width: 1px;
-            border-style: none;
-            border-color: rgb(255, 0, 3);
-            border-radius: 0px;
-            background-image: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0));
-            background-size: auto;
-            background-position: 0% 0%;
-            background-repeat: no-repeat;
-            background-clip: border-box;
-            opacity: 1;
-            z-index: 16;
-            direction: inherit;
+        .news-ticker.slide-in-bottom {
+            transform: translateY(100%);
         }
 
-        /* Rectangle-n108 - Gray background for K24NEWS */
-        .ticker-left-bg {
-            cursor: default;
-            display: block;
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            top: 0%;
-            left: 0%;
-            transform: rotate(0deg);
-            border-width: 0px;
-            border-style: none;
-            border-color: rgb(0, 0, 0) rgb(255, 207, 0) rgb(0, 0, 0) rgb(0, 0, 0);
-            border-radius: 0px;
-            background-image: linear-gradient(rgb(97, 97, 97), rgb(97, 97, 97));
-            background-size: auto;
-            background-position: 0% 0%;
-            background-repeat: no-repeat;
-            background-clip: border-box;
-            opacity: 1;
-            z-index: 2;
-            direction: inherit;
+        .news-ticker.visible {
+            transform: translateY(0);
         }
 
-        /* Text-n109 - K24NEWS.COM text - CRITICAL FIX: PROPER CENTERING */
-        .ticker-left-text {
-            cursor: default;
-            display: flex;
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            top: 0%;
-            left: 0%;
-            transform: rotate(0deg);
-            opacity: 1;
-            z-index: 17;
-            direction: inherit;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .ticker-left-text-content {
-            font-family: Barlow, sans-serif;
-            font-weight: 700;
-            font-style: normal;
-            text-align: center;
-            color: rgb(255, 255, 255);
-            line-height: 1.2;
-            text-transform: uppercase;
-            font-size: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            height: 100%;
-        }
-
-        /* Rectangle-n94 - Blue background for news - CRITICAL: MUST BE VISIBLE */
-        .ticker-news-bg {
-            cursor: default;
-            display: block;
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            top: 0%;
-            left: 0%;
-            transform: rotate(0deg);
-            border-width: 0px;
-            border-style: none;
-            border-color: rgb(0, 0, 0);
-            border-radius: 0px;
-            background-image: linear-gradient(rgb(0, 147, 185), rgb(0, 147, 185));
-            background-size: auto;
-            background-position: 0% 0%;
-            background-repeat: no-repeat;
-            background-clip: border-box;
-            opacity: 1;
-            z-index: 11;
-            direction: inherit;
-        }
-
-        /* Container-n100 - Main content area (67% width, starts at 15%) */
-        .ticker-content-container {
-            cursor: default;
-            display: block;
-            position: absolute;
-            width: 67%;
-            height: 75%;
-            top: 0%;
-            left: 15%;
-            transform: rotate(0deg);
-            border-width: 0px;
-            border-style: none;
-            border-color: rgb(255, 0, 3);
-            border-radius: 0px;
-            background-image: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0));
-            background-size: auto;
-            background-position: 0% 0%;
-            background-repeat: no-repeat;
-            background-clip: border-box;
-            opacity: 1;
-            z-index: 14;
-            direction: inherit;
-            overflow: hidden;
-        }
-
-        /* Inner content wrapper */
-        .ticker-inner-container {
-            cursor: default;
-            display: block;
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            top: 0%;
-            left: 0%;
-            transform: rotate(0deg);
-            border-width: 0px;
-            border-style: none;
-            border-color: rgb(0, 0, 0);
-            border-radius: 0px;
-            background-image: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0));
-            background-size: auto;
-            background-position: 0% 0%;
-            background-repeat: no-repeat;
-            background-clip: border-box;
-            opacity: 1;
-            z-index: 5;
-            direction: inherit;
-        }
-
-        /* TextCrawler-n111 - Scrolling text */
-        .ticker-crawler {
-            font-size: 30px;
-            white-space: nowrap;
-            font-family: Barlow, sans-serif;
-            font-weight: 500;
-            font-style: normal;
-            color: rgb(255, 255, 255);
-            text-transform: none;
-            cursor: default;
-            display: block;
-            position: absolute;
-            width: 100%;
-            height: 60%;
-            top: 21%;
-            left: 0%;
-            transform: rotate(0deg);
-            opacity: 1;
-            z-index: 2;
-            direction: inherit;
-            overflow: hidden;
-        }
-
-        .ticker-crawler-outer {
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            position: relative;
-            display: flex;
-            align-items: center;
-        }
-
-        .ticker-crawler-inner {
-            animation: ticker-scroll-continuous 25s linear infinite;
-            position: absolute;
-            white-space: nowrap;
-            transform: translateX(100%);
-        }
-
-        .ticker-crawler-item {
-            display: inline-block;
-        }
-
-        .ticker-crawler-text {
-            box-decoration-break: clone;
-            -webkit-box-decoration-break: clone;
-            cursor: default;
-            display: inline;
-            direction: inherit;
-        }
-
-        .ticker-crawler-separator {
-            margin: 0 20px;
-            color: rgb(255, 255, 255);
-        }
-
-        /* Social Media Card - Flowics Style */
-        .social-card {
-            position: absolute;
-            bottom: 20%;
-            right: 4%;
-            background: #ffffff;
-            border-radius: 16px;
-            padding: 24px;
-            max-width: 380px;
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
-            z-index: 12;
-        }
-
-        .social-header {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 16px;
-        }
-
-        .social-avatar {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #00ff88, #00cc6a);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #ffffff;
-            font-weight: 700;
-            font-size: 18px;
-        }
-
-        .social-user {
-            flex: 1;
-        }
-
-        .social-username {
-            color: #1a1a2e;
-            font-size: 16px;
-            font-weight: 700;
-            margin-bottom: 2px;
-        }
-
-        .social-handle {
-            color: #666;
-            font-size: 14px;
-        }
-
-        .social-platform {
-            width: 24px;
-            height: 24px;
-            background: #1da1f2;
-            border-radius: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #ffffff;
-            font-size: 12px;
-            font-weight: 700;
-        }
-
-        .social-message {
-            color: #1a1a2e;
-            font-size: 16px;
-            line-height: 1.4;
-            margin-bottom: 16px;
-        }
-
-        .social-stats {
-            display: flex;
-            gap: 20px;
-            color: #666;
-            font-size: 14px;
-        }
-
-        .social-stat {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        /* Corner Logo - Flowics Style */
-        .corner-logo {
-            position: absolute;
-            top: 4%;
-            left: 4%;
-            background: rgba(26, 26, 46, 0.9);
-            border: 2px solid #00ff88;
-            border-radius: 8px;
-            padding: 12px 16px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            z-index: 15;
-        }
-
-        .corner-logo-icon {
-            width: 28px;
-            height: 28px;
+        .ticker-label {
             background: #00ff88;
-            border-radius: 50%;
+            color: #1a1a2e;
+            padding: 0 1.6vw;
+            height: 100%;
             display: flex;
             align-items: center;
-            justify-content: center;
-            color: #1a1a2e;
-            font-weight: 900;
-            font-size: 14px;
-        }
-
-        .corner-logo-text {
-            color: #ffffff;
-            font-size: 14px;
             font-weight: 700;
+            font-size: 0.83vw;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 0.05vw;
+            flex-shrink: 0;
+            position: relative;
         }
 
-        /* Fullscreen Intro - Flowics Style */
+        /* Arrow effect matching reference */
+        .ticker-label::after {
+            content: '';
+            position: absolute;
+            right: -0.78vw;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 0;
+            height: 0;
+            border-left: 0.78vw solid #00ff88;
+            border-top: 2.8vh solid transparent;
+            border-bottom: 2.8vh solid transparent;
+        }
+
+        .ticker-content {
+            flex: 1;
+            overflow: hidden;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            padding: 0 2.1vw;
+        }
+
+        .ticker-text {
+            color: #ffffff;
+            font-size: 0.94vw;
+            font-weight: 500;
+            white-space: nowrap;
+            animation: scroll-left 25s linear infinite;
+        }
+
+        @keyframes scroll-left {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+
+        /* FULLSCREEN INTRO - Responsive viewport positioning */
         .fullscreen-intro {
             position: absolute;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            z-index: 30;
+            z-index: 100;
+            transition: all 0.7s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .intro-logo {
-            width: 120px;
-            height: 120px;
+        .fullscreen-intro.fade-in {
+            opacity: 0;
+        }
+
+        .fullscreen-intro.visible {
+            opacity: 1;
+        }
+
+        .fullscreen-logo {
+            width: 7.8vw;
+            height: 13.9vh;
             background: #00ff88;
+            color: #1a1a2e;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #1a1a2e;
-            font-size: 48px;
             font-weight: 900;
-            margin-bottom: 40px;
-            animation: scale-pulse 2s ease-in-out infinite;
+            font-size: 3.1vw;
+            margin-bottom: 4.6vh;
         }
 
-        .intro-title {
+        .fullscreen-title {
+            font-size: 3.1vw;
+            font-weight: 700;
             color: #ffffff;
-            font-size: 72px;
-            font-weight: 900;
             text-align: center;
-            margin-bottom: 20px;
-            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+            margin-bottom: 1.85vh;
+            letter-spacing: 0.16vw;
         }
 
-        .intro-subtitle {
+        .fullscreen-subtitle {
+            font-size: 1.25vw;
             color: #e0e6ed;
-            font-size: 32px;
-            font-weight: 400;
             text-align: center;
-            margin-bottom: 60px;
+            opacity: 0.9;
         }
 
-        .intro-line {
-            width: 200px;
-            height: 4px;
-            background: linear-gradient(90deg, transparent, #00ff88, transparent);
-            animation: line-expand 3s ease-in-out infinite;
-        }
-
-        /* Animation Classes */
-        .slide-in-left {
-            transform: translateX(-100%);
-        }
-
-        .slide-in-right {
-            transform: translateX(100%);
-        }
-
-        .slide-in-bottom {
-            transform: translateY(100%);
-        }
-
-        .slide-in-top {
-            transform: translateY(-100%);
-        }
-
-        .fade-in {
-            opacity: 0;
-        }
-
-        .scale-in {
-            transform: scale(0);
-            opacity: 0;
-        }
-
-        .visible {
-            transform: translateX(0) translateY(0) scale(1) !important;
-            opacity: 1 !important;
-            transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-        }
-
-        /* Keyframe Animations */
-        @keyframes ticker-scroll-continuous {
-            0% { 
-                transform: translateX(100%); 
-            }
-            100% { 
-                transform: translateX(-100%); 
-            }
-        }
-
+        /* Animations */
         @keyframes pulse {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.7; }
         }
 
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0; }
-        }
-
-        @keyframes scale-pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-        }
-
-        @keyframes line-expand {
-            0%, 100% { width: 200px; }
-            50% { width: 400px; }
-        }
-
-        /* Responsive adjustments */
-        @media (max-width: 1920px) {
-            .lower-third-title { font-size: 38px; }
-            .lower-third-subtitle { font-size: 22px; }
-            .intro-title { font-size: 64px; }
-            .intro-subtitle { font-size: 28px; }
-        }
-
-        /* Debug info for development */
-        .debug-info {
+        /* Debug panel - Fixed positioning */
+        .debug-panel {
             position: fixed;
-            bottom: 10px;
-            right: 10px;
-            background: rgba(0, 0, 0, 0.8);
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.9);
             color: #00ff88;
-            padding: 10px;
-            border-radius: 5px;
-            font-size: 12px;
+            padding: 16px;
+            border-radius: 8px;
             font-family: monospace;
-            z-index: 1000;
-            max-width: 300px;
+            font-size: 12px;
+            z-index: 9999;
+            min-width: 200px;
+            display: none;
         }
 
-        .debug-info div {
-            margin-bottom: 5px;
+        .debug-panel.visible {
+            display: block;
         }
 
-        .debug-info .status-ok {
-            color: #00ff88;
+        .debug-item {
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
         }
 
-        .debug-info .status-error {
-            color: #ff3333;
+        .debug-item:last-child {
+            margin-bottom: 0;
         }
 
-        .debug-info .status-warning {
-            color: #ffaa00;
+        .debug-label {
+            opacity: 0.8;
+        }
+
+        .debug-value {
+            font-weight: bold;
+            color: #ffffff;
+        }
+
+        /* Responsive font scaling for very small screens */
+        @media (max-width: 768px) {
+            .top-bar-title { font-size: 3vw; }
+            .top-bar-logo { font-size: 3vw; }
+            .live-indicator { font-size: 2vw; }
+            .ticker-text { font-size: 2.5vw; }
+            .ticker-label { font-size: 2vw; }
+        }
+
+        /* Responsive font scaling for very large screens */
+        @media (min-width: 2560px) {
+            .top-bar-title { font-size: 32px; }
+            .top-bar-logo { font-size: 32px; }
+            .live-indicator { font-size: 20px; }
+            .ticker-text { font-size: 24px; }
+            .ticker-label { font-size: 21px; }
         }
     </style>
 </head>
 <body>
-    <div id="root">
-        <div class="graphics-container">
-            <!-- Regions container for debugging -->
-            <div id="regions-container"></div>
-            
-            <!-- Graphics container -->
-            <div id="graphics-container"></div>
-        </div>
+    <div class="graphics-container" id="graphics-container">
+        <!-- Region debugging overlay -->
+        <div id="regions-container"></div>
+        
+        <!-- Graphics will be rendered here -->
+        <div id="graphics-output"></div>
+    </div>
 
-        <!-- Debug info (only visible when needed) -->
-        <div id="debug-info" class="debug-info" style="display: none;">
-            <div><strong>NodeCG Graphics Debug</strong></div>
-            <div id="debug-nodecg">NodeCG: <span class="status-error">Not Connected</span></div>
-            <div id="debug-graphics">Active Graphics: <span id="debug-graphics-count">0</span></div>
-            <div id="debug-regions">Regions: <span id="debug-regions-status">Hidden</span></div>
-            <div id="debug-mode">Mode: <span id="debug-mode-status">Standalone</span></div>
-            <div style="margin-top: 10px; font-size: 10px; opacity: 0.7;">
-                Press 'D' to toggle debug info<br>
-                Press 'T' to test ticker<br>
-                Press 'R' to toggle regions
-            </div>
+    <!-- Debug panel -->
+    <div class="debug-panel" id="debug-panel">
+        <div class="debug-item">
+            <span class="debug-label">NodeCG:</span>
+            <span class="debug-value" id="debug-nodecg">Checking...</span>
+        </div>
+        <div class="debug-item">
+            <span class="debug-label">Active Graphics:</span>
+            <span class="debug-value" id="debug-graphics">0</span>
+        </div>
+        <div class="debug-item">
+            <span class="debug-label">Regions:</span>
+            <span class="debug-value" id="debug-regions">Hidden</span>
+        </div>
+        <div class="debug-item">
+            <span class="debug-label">Mode:</span>
+            <span class="debug-value" id="debug-mode">Standalone</span>
+        </div>
+        <div class="debug-item">
+            <span class="debug-label">Viewport:</span>
+            <span class="debug-value" id="debug-viewport">-</span>
+        </div>
+        <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #333; font-size: 10px; opacity: 0.7;">
+            Press 'D' to toggle debug<br>
+            Press 'T' for ticker test<br>
+            Press 'R' for regions<br>
+            Press '1-6' for graphics
         </div>
     </div>
 
     <script>
-        // Graphics state
+        // Graphics state and data
         let activeGraphics = [];
         let showRegions = false;
         let graphicsData = {};
-        let isNodeCGConnected = false;
+        let isNodeCGMode = false;
         let debugMode = false;
 
-        // Region definitions matching Flowics layout - ADDED REGION-N4
+        // Region definitions (RESPONSIVE VIEWPORT COORDINATES)
         const regions = [
-            { id: 'top-bar', name: 'Top Bar', x: 0, y: 6, width: 100, height: 6 },
-            { id: 'corner-logo', name: 'Corner Logo', x: 4, y: 4, width: 20, height: 8 },
-            { id: 'score-box', name: 'Score Box', x: 75, y: 12, width: 21, height: 25 },
-            { id: 'social-card', name: 'Social Card', x: 65, y: 45, width: 31, height: 35 },
-            { id: 'lower-third', name: 'Lower Third', x: 0, y: 75, width: 85, height: 17 },
-            { id: 'region-n4', name: 'Region-n4 (News Ticker)', x: 0, y: 92, width: 100, height: 8 },
+            { id: 'top-bar', name: 'Top Bar', x: 0, y: 0, width: 100, height: 7.4 },
+            { id: 'corner-logo', name: 'Corner Logo', x: 1.6, y: 2.8, width: 5.2, height: 9.3 },
+            { id: 'score-box', name: 'Score Box', x: 80.2, y: 2.8, width: 18.2, height: 18.5 },
+            { id: 'social-card', name: 'Social Card', x: 77.6, y: 37, width: 20.8, height: 23.1 },
+            { id: 'lower-third', name: 'Lower Third', x: 0, y: 78.7, width: 52.1, height: 13.9 },
+            { id: 'news-ticker', name: 'News Ticker', x: 0, y: 87, width: 100, height: 5.6 },
             { id: 'fullscreen', name: 'Fullscreen', x: 0, y: 0, width: 100, height: 100 }
         ];
 
-        // Graphics templates - UPDATED NEWS TICKER TO USE REGION-N4
-        const graphicTemplates = {
-            'top-bar': {
-                type: 'top-bar',
-                region: 'top-bar',
-                animation: 'slide-in-top'
+        // Default graphics data
+        const defaultGraphicsData = {
+            topBar: {
+                logo: 'F',
+                title: 'K24 NEWS',
+                live: true
             },
-            'corner-logo': {
-                type: 'corner-logo',
-                region: 'corner-logo',
-                animation: 'scale-in'
+            logo: {
+                icon: 'F',
+                text: 'LIVE'
             },
-            'score-box': {
-                type: 'score-box',
-                region: 'score-box',
-                animation: 'fade-in'
+            score: {
+                homeTeam: 'EAGLES',
+                awayTeam: 'LIONS',
+                homeScore: 24,
+                awayScore: 17,
+                time: '12:45',
+                period: '3rd Quarter'
             },
-            'social-card': {
-                type: 'social-card',
-                region: 'social-card',
-                animation: 'slide-in-right'
+            social: {
+                platform: 'twitter',
+                username: 'SportsFan',
+                handle: '@sportsfan2024',
+                avatar: 'SF',
+                message: 'What an incredible play! This game is going to be remembered for years to come. #ChampionshipFinal #GameOfTheCentury'
             },
-            'lower-third': {
-                type: 'lower-third',
-                region: 'lower-third',
-                animation: 'slide-in-left'
+            lowerThird: {
+                title: 'Championship Final Tonight',
+                subtitle: 'Two powerhouse teams clash in what promises to be the game of the century',
+                person: 'Sarah Johnson, Sports Analyst',
+                location: 'Madison Square Garden, New York'
             },
-            'news-ticker': {
-                type: 'news-ticker',
-                region: 'region-n4',
-                animation: 'slide-in-bottom'
+            ticker: {
+                items: [
+                    'Breaking: Major trade deal announced between leading tech companies',
+                    'Weather Alert: Severe thunderstorm warning issued for metropolitan area',
+                    'Sports Update: Championship finals set for this weekend at the arena',
+                    'Market News: Stock market reaches new highs amid economic optimism',
+                    'Technology: New breakthrough in artificial intelligence announced by research team'
+                ]
             },
-            'fullscreen-intro': {
-                type: 'fullscreen-intro',
-                region: 'fullscreen',
-                animation: 'fade-in'
+            fullscreen: {
+                logo: 'F',
+                title: 'CHAMPIONSHIP COVERAGE',
+                subtitle: 'Live from Madison Square Garden'
             }
         };
 
-        // Initialize NodeCG integration with fallback
+        // Initialize graphics data
+        graphicsData = { ...defaultGraphicsData };
+
+        // Initialize NodeCG integration
         function initializeNodeCG() {
-            console.log('Initializing NodeCG connection...');
-            
-            if (typeof nodecg !== 'undefined') {
-                try {
-                    const activeGraphicsRep = nodecg.Replicant('activeGraphics');
-                    const showRegionsRep = nodecg.Replicant('showRegions');
-                    const graphicsDataRep = nodecg.Replicant('graphicsData');
-
-                    // Wait for replicants to be ready
-                    Promise.all([
-                        new Promise(resolve => activeGraphicsRep.on('declared', resolve)),
-                        new Promise(resolve => showRegionsRep.on('declared', resolve)),
-                        new Promise(resolve => graphicsDataRep.on('declared', resolve))
-                    ]).then(() => {
+            try {
+                if (typeof nodecg !== 'undefined') {
+                    console.log('NodeCG detected, initializing replicants...');
+                    isNodeCGMode = true;
+                    
+                    // Wait for NodeCG to be ready
+                    nodecg.readyReplicants(['activeGraphics', 'showRegions', 'graphicsData']).then(() => {
                         console.log('NodeCG replicants ready');
-                        isNodeCGConnected = true;
-                        updateDebugInfo();
+                        
+                        const activeGraphicsRep = nodecg.Replicant('activeGraphics');
+                        const showRegionsRep = nodecg.Replicant('showRegions');
+                        const graphicsDataRep = nodecg.Replicant('graphicsData');
 
+                        // Set up replicant listeners
                         activeGraphicsRep.on('change', (newValue) => {
                             console.log('Active graphics changed:', newValue);
                             activeGraphics = newValue || [];
                             updateGraphics();
-                            updateDebugInfo();
+                            updateDebugPanel();
                         });
 
                         showRegionsRep.on('change', (newValue) => {
                             console.log('Show regions changed:', newValue);
                             showRegions = newValue || false;
                             updateRegions();
-                            updateDebugInfo();
+                            updateDebugPanel();
                         });
 
                         graphicsDataRep.on('change', (newValue) => {
                             console.log('Graphics data changed:', newValue);
-                            graphicsData = newValue || {};
+                            graphicsData = { ...defaultGraphicsData, ...newValue };
                             updateGraphics();
                         });
 
                         // Set initial values
                         activeGraphics = activeGraphicsRep.value || [];
                         showRegions = showRegionsRep.value || false;
-                        graphicsData = graphicsDataRep.value || {};
+                        graphicsData = { ...defaultGraphicsData, ...(graphicsDataRep.value || {}) };
                         
-                        console.log('Initial state:', { activeGraphics, showRegions, graphicsData });
                         updateGraphics();
                         updateRegions();
-                        updateDebugInfo();
+                        updateDebugPanel();
+                    }).catch(error => {
+                        console.error('Error initializing NodeCG replicants:', error);
+                        initializeStandalone();
                     });
-
-                } catch (error) {
-                    console.error('Error initializing NodeCG:', error);
-                    initializeFallbackMode();
+                } else {
+                    console.log('NodeCG not available, running in standalone mode');
+                    initializeStandalone();
                 }
-            } else {
-                console.log('NodeCG not available, running in standalone mode');
-                initializeFallbackMode();
+            } catch (error) {
+                console.error('Error during NodeCG initialization:', error);
+                initializeStandalone();
             }
         }
 
-        // Fallback mode for testing without NodeCG
-        function initializeFallbackMode() {
-            console.log('Initializing fallback mode...');
-            isNodeCGConnected = false;
+        // Initialize standalone mode
+        function initializeStandalone() {
+            console.log('Initializing standalone mode...');
+            isNodeCGMode = false;
             
-            // Set default data for testing
-            graphicsData = {
-                topBar: {
-                    logo: 'F',
-                    title: 'FLOWICS SPORTS',
-                    live: true
-                },
-                logo: {
-                    icon: 'F',
-                    text: 'LIVE'
-                },
-                score: {
-                    homeTeam: 'EAGLES',
-                    awayTeam: 'LIONS',
-                    homeScore: 24,
-                    awayScore: 17,
-                    time: '12:45',
-                    period: '3rd Quarter'
-                },
-                social: {
-                    platform: 'twitter',
-                    username: 'SportsFan',
-                    handle: '@sportsfan2024',
-                    avatar: 'SF',
-                    message: 'What an incredible play! This game is going to be remembered for years to come. #ChampionshipFinal #GameOfTheCentury'
-                },
-                lowerThird: {
-                    title: 'Championship Final Tonight',
-                    subtitle: 'Two powerhouse teams clash in what promises to be the game of the century',
-                    person: 'Sarah Johnson, Sports Analyst',
-                    location: 'Madison Square Garden, New York'
-                },
-                ticker: {
-                    items: [
-                        'Breaking: Major trade deal announced between leading tech companies',
-                        'Weather Alert: Severe thunderstorm warning issued for metropolitan area',
-                        'Sports Update: Championship finals set for this weekend at the arena',
-                        'Market News: Stock market reaches new highs amid economic optimism'
-                    ]
-                },
-                fullscreen: {
-                    logo: 'F',
-                    title: 'CHAMPIONSHIP COVERAGE',
-                    subtitle: 'Live from Madison Square Garden'
-                }
-            };
-
-            // Show some graphics by default for testing
+            // Show news ticker by default for testing
             activeGraphics = ['news-ticker'];
-            showRegions = false;
             
             updateGraphics();
             updateRegions();
-            updateDebugInfo();
-        }
-
-        // Update debug information
-        function updateDebugInfo() {
-            if (!debugMode) return;
-
-            const debugNodeCG = document.getElementById('debug-nodecg');
-            const debugGraphicsCount = document.getElementById('debug-graphics-count');
-            const debugRegionsStatus = document.getElementById('debug-regions-status');
-            const debugModeStatus = document.getElementById('debug-mode-status');
-
-            if (debugNodeCG) {
-                debugNodeCG.innerHTML = isNodeCGConnected ? 
-                    'NodeCG: <span class="status-ok">Connected</span>' : 
-                    'NodeCG: <span class="status-error">Not Connected</span>';
-            }
-
-            if (debugGraphicsCount) {
-                debugGraphicsCount.textContent = activeGraphics.length;
-            }
-
-            if (debugRegionsStatus) {
-                debugRegionsStatus.textContent = showRegions ? 'Visible' : 'Hidden';
-            }
-
-            if (debugModeStatus) {
-                debugModeStatus.textContent = isNodeCGConnected ? 'NodeCG' : 'Standalone';
-            }
+            updateDebugPanel();
         }
 
         // Update regions display
@@ -1138,11 +766,11 @@
 
             regions.forEach(region => {
                 const div = document.createElement('div');
-                div.className = `region region-debug ${activeGraphics.some(id => graphicTemplates[id]?.region === region.id) ? 'active' : ''}`;
-                div.style.left = `${region.x}%`;
-                div.style.top = `${region.y}%`;
-                div.style.width = `${region.width}%`;
-                div.style.height = `${region.height}%`;
+                div.className = `region region-debug ${activeGraphics.includes(region.id) ? 'active' : ''}`;
+                div.style.left = `${region.x}vw`;
+                div.style.top = `${region.y}vh`;
+                div.style.width = `${region.width}vw`;
+                div.style.height = `${region.height}vh`;
                 
                 const label = document.createElement('div');
                 label.className = 'region-label';
@@ -1155,197 +783,123 @@
 
         // Update graphics display
         function updateGraphics() {
-            const container = document.getElementById('graphics-container');
+            const container = document.getElementById('graphics-output');
             container.innerHTML = '';
 
-            console.log('Updating graphics:', activeGraphics);
-
             activeGraphics.forEach(graphicId => {
-                const template = graphicTemplates[graphicId];
-                if (!template) {
-                    console.warn('Template not found for graphic:', graphicId);
-                    return;
-                }
-
-                const graphic = createGraphic(graphicId, template);
+                const graphic = createGraphic(graphicId);
                 if (graphic) {
                     container.appendChild(graphic);
                     
-                    // Trigger animation
+                    // Trigger animation after a short delay
                     setTimeout(() => {
                         graphic.classList.add('visible');
                     }, 50);
                 }
             });
-
-            updateDebugInfo();
         }
 
         // Create graphic element
-        function createGraphic(id, template) {
-            const data = graphicsData[getDataKey(template.type)] || getDefaultData(template.type);
-            
-            switch (template.type) {
+        function createGraphic(graphicId) {
+            switch (graphicId) {
                 case 'top-bar':
-                    return createTopBar(data, template.animation);
+                    return createTopBar();
                 case 'corner-logo':
-                    return createCornerLogo(data, template.animation);
+                    return createCornerLogo();
                 case 'score-box':
-                    return createScoreBox(data, template.animation);
+                    return createScoreBox();
                 case 'social-card':
-                    return createSocialCard(data, template.animation);
+                    return createSocialCard();
                 case 'lower-third':
-                    return createLowerThird(data, template.animation);
+                    return createLowerThird();
                 case 'news-ticker':
-                    return createNewsTicker(data, template.animation);
+                    return createNewsTicker();
                 case 'fullscreen-intro':
-                    return createFullscreenIntro(data, template.animation);
+                    return createFullscreenIntro();
                 default:
                     return null;
             }
         }
 
-        // Get data key for graphic type
-        function getDataKey(type) {
-            const mapping = {
-                'top-bar': 'topBar',
-                'corner-logo': 'logo',
-                'score-box': 'score',
-                'social-card': 'social',
-                'lower-third': 'lowerThird',
-                'news-ticker': 'ticker',
-                'fullscreen-intro': 'fullscreen'
-            };
-            return mapping[type] || type;
-        }
-
-        // Get default data for graphic type
-        function getDefaultData(type) {
-            const defaults = {
-                'top-bar': {
-                    logo: 'F',
-                    title: 'FLOWICS SPORTS',
-                    live: true
-                },
-                'corner-logo': {
-                    icon: 'F',
-                    text: 'LIVE'
-                },
-                'score-box': {
-                    homeTeam: 'EAGLES',
-                    awayTeam: 'LIONS',
-                    homeScore: 24,
-                    awayScore: 17,
-                    time: '12:45',
-                    period: '3rd Quarter'
-                },
-                'social-card': {
-                    platform: 'twitter',
-                    username: 'SportsFan',
-                    handle: '@sportsfan2024',
-                    avatar: 'SF',
-                    message: 'What an incredible play! This game is going to be remembered for years to come. #ChampionshipFinal #GameOfTheCentury'
-                },
-                'lower-third': {
-                    title: 'Championship Final Tonight',
-                    subtitle: 'Two powerhouse teams clash in what promises to be the game of the century',
-                    person: 'Sarah Johnson, Sports Analyst',
-                    location: 'Madison Square Garden, New York'
-                },
-                'news-ticker': {
-                    items: [
-                        'Breaking: Major trade deal announced between leading tech companies',
-                        'Weather Alert: Severe thunderstorm warning issued for metropolitan area',
-                        'Sports Update: Championship finals set for this weekend at the arena',
-                        'Market News: Stock market reaches new highs amid economic optimism'
-                    ]
-                },
-                'fullscreen-intro': {
-                    logo: 'F',
-                    title: 'CHAMPIONSHIP COVERAGE',
-                    subtitle: 'Live from Madison Square Garden'
-                }
-            };
-            return defaults[type] || {};
-        }
-
         // Create top bar graphic
-        function createTopBar(data, animation) {
+        function createTopBar() {
+            const data = graphicsData.topBar || defaultGraphicsData.topBar;
             const div = document.createElement('div');
-            div.className = `top-bar ${animation}`;
+            div.className = 'top-bar slide-in-top';
             
             div.innerHTML = `
-                <div class="top-bar-logo">
-                    <div class="top-bar-logo-icon">${data.logo || 'F'}</div>
-                    <span>${data.title || 'FLOWICS SPORTS'}</span>
+                <div class="top-bar-left">
+                    <div class="top-bar-logo">${data.logo}</div>
+                    <div class="top-bar-title">${data.title}</div>
                 </div>
-                ${data.live ? `
-                    <div class="top-bar-live">
-                        <div class="live-dot"></div>
-                        <span>LIVE</span>
-                    </div>
-                ` : ''}
+                <div class="top-bar-right">
+                    ${data.live ? '<div class="live-indicator">● LIVE</div>' : ''}
+                </div>
             `;
             
             return div;
         }
 
         // Create corner logo graphic
-        function createCornerLogo(data, animation) {
+        function createCornerLogo() {
+            const data = graphicsData.logo || defaultGraphicsData.logo;
             const div = document.createElement('div');
-            div.className = `corner-logo ${animation}`;
+            div.className = 'corner-logo scale-in';
             
             div.innerHTML = `
-                <div class="corner-logo-icon">${data.icon || 'F'}</div>
-                <div class="corner-logo-text">${data.text || 'LIVE'}</div>
+                <div class="corner-logo-icon">${data.icon}</div>
+                <div class="corner-logo-text">${data.text}</div>
             `;
             
             return div;
         }
 
         // Create score box graphic
-        function createScoreBox(data, animation) {
+        function createScoreBox() {
+            const data = graphicsData.score || defaultGraphicsData.score;
             const div = document.createElement('div');
-            div.className = `score-box ${animation}`;
+            div.className = 'score-box slide-in-right';
             
             div.innerHTML = `
-                <div class="score-header">${data.period || 'Live'}</div>
-                <div class="score-teams">
-                    <div class="team">
-                        <div class="team-name">${data.homeTeam || 'HOME'}</div>
-                        <div class="team-score">${data.homeScore || 0}</div>
+                <div class="score-header">
+                    <div>🏆 ${data.period}</div>
+                    <div>⏰ ${data.time}</div>
+                </div>
+                <div class="score-body">
+                    <div class="score-team">
+                        <div class="team-name">${data.homeTeam}</div>
+                        <div class="team-score">${data.homeScore}</div>
                     </div>
-                    <div class="score-vs">VS</div>
-                    <div class="team">
-                        <div class="team-name">${data.awayTeam || 'AWAY'}</div>
-                        <div class="team-score">${data.awayScore || 0}</div>
+                    <div class="score-team">
+                        <div class="team-name">${data.awayTeam}</div>
+                        <div class="team-score">${data.awayScore}</div>
                     </div>
                 </div>
-                <div class="score-time">${data.time || '00:00'}</div>
             `;
             
             return div;
         }
 
         // Create social card graphic
-        function createSocialCard(data, animation) {
+        function createSocialCard() {
+            const data = graphicsData.social || defaultGraphicsData.social;
             const div = document.createElement('div');
-            div.className = `social-card ${animation}`;
+            div.className = 'social-card slide-in-right';
             
             div.innerHTML = `
-                <div class="social-header">
-                    <div class="social-avatar">${data.avatar || 'U'}</div>
-                    <div class="social-user">
-                        <div class="social-username">${data.username || 'User'}</div>
-                        <div class="social-handle">${data.handle || '@user'}</div>
+                <div class="social-header"></div>
+                <div class="social-content">
+                    <div class="social-avatar">${data.avatar}</div>
+                    <div class="social-text">
+                        <div class="social-username">${data.username}</div>
+                        <div class="social-handle">${data.handle}</div>
+                        <div class="social-message">${data.message}</div>
+                        <div class="social-stats">
+                            <div>❤️ 24</div>
+                            <div>💬 8</div>
+                            <div>🔄 3</div>
+                        </div>
                     </div>
-                    <div class="social-platform">T</div>
-                </div>
-                <div class="social-message">${data.message || 'Social media post content'}</div>
-                <div class="social-stats">
-                    <div class="social-stat">❤️ 24</div>
-                    <div class="social-stat">💬 8</div>
-                    <div class="social-stat">🔄 3</div>
                 </div>
             `;
             
@@ -1353,99 +907,81 @@
         }
 
         // Create lower third graphic
-        function createLowerThird(data, animation) {
+        function createLowerThird() {
+            const data = graphicsData.lowerThird || defaultGraphicsData.lowerThird;
             const div = document.createElement('div');
-            div.className = `lower-third ${animation}`;
+            div.className = 'lower-third slide-in-left';
             
             div.innerHTML = `
-                <div class="lower-third-container">
-                    <div class="lower-third-content">
-                        <div class="lower-third-title">${data.title || ''}</div>
-                        <div class="lower-third-subtitle">${data.subtitle || ''}</div>
+                <div class="lower-third-content">
+                    <div class="lower-third-accent"></div>
+                    <div class="lower-third-text">
+                        <div class="lower-third-title">${data.title}</div>
+                        <div class="lower-third-subtitle">${data.subtitle}</div>
                         <div class="lower-third-meta">
                             ${data.person ? `<div class="lower-third-meta-item">👤 ${data.person}</div>` : ''}
                             ${data.location ? `<div class="lower-third-meta-item">📍 ${data.location}</div>` : ''}
                         </div>
                     </div>
-                    <div class="lower-third-accent"></div>
                 </div>
             `;
             
             return div;
         }
 
-        // Create news ticker graphic - FINAL FIX: PROPER TEXT CENTERING
-        function createNewsTicker(data, animation) {
+        // Create news ticker graphic - RESPONSIVE POSITIONING
+        function createNewsTicker() {
+            const data = graphicsData.ticker || defaultGraphicsData.ticker;
             const div = document.createElement('div');
-            div.className = `news-ticker ${animation}`;
+            div.className = 'news-ticker slide-in-bottom';
             
-            const items = data.items || [
-                'Breaking: Major trade deal announced between leading tech companies',
-                'Weather Alert: Severe thunderstorm warning issued for metropolitan area',
-                'Sports Update: Championship finals set for this weekend at the arena',
-                'Market News: Stock market reaches new highs amid economic optimism'
-            ];
-            
-            // Combine items with bullet separators exactly like Flowics
-            const tickerText = items.join(' ⬤ ');
+            // Cycle through ticker items
+            let currentIndex = 0;
+            const items = data.items || ['News Update'];
             
             div.innerHTML = `
-                <!-- Rectangle-n101 - Main black background -->
-                <div class="ticker-main-bg"></div>
-
-                <!-- Container-n103 - Right section with NEWS UPDATE -->
-                <div class="ticker-right-container">
-                    <div class="ticker-right-yellow"></div>
-                    <div class="ticker-right-white"></div>
-                    <div class="ticker-right-text">
-                        <div class="ticker-right-text-content">News Update</div>
-                    </div>
-                </div>
-
-                <!-- Container-n107 - Left section with K24NEWS.COM -->
-                <div class="ticker-left-container">
-                    <div class="ticker-left-bg"></div>
-                    <div class="ticker-left-text">
-                        <div class="ticker-left-text-content">k24news.com</div>
-                    </div>
-                </div>
-
-                <!-- Rectangle-n94 - Blue background for news (CRITICAL: MUST BE VISIBLE) -->
-                <div class="ticker-news-bg"></div>
-
-                <!-- Container-n100 - Main content area -->
-                <div class="ticker-content-container">
-                    <div class="ticker-inner-container">
-                        <!-- TextCrawler-n111 - Scrolling text -->
-                        <div class="ticker-crawler">
-                            <div class="ticker-crawler-outer">
-                                <div class="ticker-crawler-inner">
-                                    <div class="ticker-crawler-item">
-                                        <span class="ticker-crawler-text">${tickerText}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                <div class="ticker-label">NEWS UPDATE</div>
+                <div class="ticker-content">
+                    <div class="ticker-text">${items[currentIndex]}</div>
                 </div>
             `;
+            
+            // Auto-cycle ticker items
+            if (items.length > 1) {
+                setInterval(() => {
+                    currentIndex = (currentIndex + 1) % items.length;
+                    const tickerText = div.querySelector('.ticker-text');
+                    if (tickerText) {
+                        tickerText.textContent = items[currentIndex];
+                    }
+                }, 8000);
+            }
             
             return div;
         }
 
         // Create fullscreen intro graphic
-        function createFullscreenIntro(data, animation) {
+        function createFullscreenIntro() {
+            const data = graphicsData.fullscreen || defaultGraphicsData.fullscreen;
             const div = document.createElement('div');
-            div.className = `fullscreen-intro ${animation}`;
+            div.className = 'fullscreen-intro fade-in';
             
             div.innerHTML = `
-                <div class="intro-logo">${data.logo || 'F'}</div>
-                <div class="intro-title">${data.title || 'LIVE BROADCAST'}</div>
-                <div class="intro-subtitle">${data.subtitle || 'Professional Coverage'}</div>
-                <div class="intro-line"></div>
+                <div class="fullscreen-logo">${data.logo}</div>
+                <div class="fullscreen-title">${data.title}</div>
+                <div class="fullscreen-subtitle">${data.subtitle}</div>
             `;
             
             return div;
+        }
+
+        // Update debug panel
+        function updateDebugPanel() {
+            document.getElementById('debug-nodecg').textContent = isNodeCGMode ? 'Connected' : 'Not Connected';
+            document.getElementById('debug-graphics').textContent = activeGraphics.length;
+            document.getElementById('debug-regions').textContent = showRegions ? 'Visible' : 'Hidden';
+            document.getElementById('debug-mode').textContent = isNodeCGMode ? 'NodeCG' : 'Standalone';
+            document.getElementById('debug-viewport').textContent = `${window.innerWidth}x${window.innerHeight}`;
         }
 
         // Keyboard shortcuts for testing
@@ -1453,73 +989,65 @@
             switch (e.key.toLowerCase()) {
                 case 'd':
                     debugMode = !debugMode;
-                    document.getElementById('debug-info').style.display = debugMode ? 'block' : 'none';
-                    updateDebugInfo();
+                    document.getElementById('debug-panel').classList.toggle('visible', debugMode);
                     break;
                 case 't':
-                    // Test ticker
-                    if (!activeGraphics.includes('news-ticker')) {
-                        activeGraphics.push('news-ticker');
-                    } else {
-                        activeGraphics = activeGraphics.filter(id => id !== 'news-ticker');
-                    }
-                    updateGraphics();
+                    toggleGraphic('news-ticker');
                     break;
                 case 'r':
-                    // Toggle regions
                     showRegions = !showRegions;
                     updateRegions();
-                    updateDebugInfo();
+                    updateDebugPanel();
                     break;
                 case '1':
-                    // Test top bar
-                    if (!activeGraphics.includes('top-bar')) {
-                        activeGraphics.push('top-bar');
-                    } else {
-                        activeGraphics = activeGraphics.filter(id => id !== 'top-bar');
-                    }
-                    updateGraphics();
+                    toggleGraphic('top-bar');
                     break;
                 case '2':
-                    // Test lower third
-                    if (!activeGraphics.includes('lower-third')) {
-                        activeGraphics.push('lower-third');
-                    } else {
-                        activeGraphics = activeGraphics.filter(id => id !== 'lower-third');
-                    }
-                    updateGraphics();
+                    toggleGraphic('corner-logo');
                     break;
                 case '3':
-                    // Test score box
-                    if (!activeGraphics.includes('score-box')) {
-                        activeGraphics.push('score-box');
-                    } else {
-                        activeGraphics = activeGraphics.filter(id => id !== 'score-box');
-                    }
-                    updateGraphics();
+                    toggleGraphic('score-box');
+                    break;
+                case '4':
+                    toggleGraphic('social-card');
+                    break;
+                case '5':
+                    toggleGraphic('lower-third');
+                    break;
+                case '6':
+                    toggleGraphic('fullscreen-intro');
                     break;
             }
         });
+
+        // Toggle graphic function
+        function toggleGraphic(graphicId) {
+            if (activeGraphics.includes(graphicId)) {
+                activeGraphics = activeGraphics.filter(id => id !== graphicId);
+            } else {
+                activeGraphics.push(graphicId);
+            }
+            updateGraphics();
+            updateDebugPanel();
+        }
+
+        // Update debug panel on resize
+        window.addEventListener('resize', updateDebugPanel);
 
         // Initialize the application
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('DOM loaded, initializing application...');
+            console.log('DOM loaded, initializing graphics system...');
             initializeNodeCG();
-            
-            // Show debug info by default in development
-            if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-                debugMode = true;
-                document.getElementById('debug-info').style.display = 'block';
-                updateDebugInfo();
-            }
+            updateDebugPanel();
         });
 
-        // Log any errors
-        window.addEventListener('error', (e) => {
-            console.error('JavaScript error:', e.error);
-        });
-
-        console.log('Graphics script loaded successfully');
+        // Log system info
+        console.log('Flowics-style Graphics System Loaded');
+        console.log('Available keyboard shortcuts:');
+        console.log('D - Toggle debug panel');
+        console.log('T - Toggle news ticker');
+        console.log('R - Toggle regions');
+        console.log('1-6 - Toggle individual graphics');
     </script>
 </body>
 </html>
