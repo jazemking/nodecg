@@ -289,7 +289,7 @@
             display: block;
             position: absolute;
             width: 100%;
-            height: 100%; /* FIXED: Changed from 75% to 100% */
+            height: 75%;
             top: 0%;
             left: 0%;
             transform: rotate(0deg);
@@ -313,7 +313,7 @@
             display: block;
             position: absolute;
             width: 18%;
-            height: 100%; /* FIXED: Changed from 75% to 100% */
+            height: 75%;
             top: 0%;
             left: 82%;
             transform: rotate(0deg);
@@ -418,7 +418,7 @@
             display: block;
             position: absolute;
             width: 15%;
-            height: 100%; /* FIXED: Changed from 75% to 100% */
+            height: 75%;
             top: 0%;
             left: 0%;
             transform: rotate(0deg);
@@ -493,7 +493,7 @@
             font-size: 32.3906px;
         }
 
-        /* Rectangle-n94 - Blue background for news */
+        /* Rectangle-n94 - Blue background for news - CRITICAL: MUST BE VISIBLE */
         .ticker-news-bg {
             cursor: default;
             display: block;
@@ -517,13 +517,13 @@
             direction: inherit;
         }
 
-        /* Container-n100 - Main content area (FIXED: 67% width, starts at 15%) */
+        /* Container-n100 - Main content area (67% width, starts at 15%) */
         .ticker-content-container {
             cursor: default;
             display: block;
             position: absolute;
             width: 67%;
-            height: 100%; /* FIXED: Changed from 75% to 100% */
+            height: 75%;
             top: 0%;
             left: 15%;
             transform: rotate(0deg);
@@ -539,7 +539,7 @@
             opacity: 1;
             z-index: 14;
             direction: inherit;
-            overflow: hidden; /* CRITICAL: Prevent overflow past container */
+            overflow: hidden;
         }
 
         /* Inner content wrapper */
@@ -566,7 +566,7 @@
             direction: inherit;
         }
 
-        /* TextCrawler-n111 - Scrolling text (FIXED POSITIONING) */
+        /* TextCrawler-n111 - Scrolling text */
         .ticker-crawler {
             font-size: 30px;
             white-space: nowrap;
@@ -579,14 +579,14 @@
             display: block;
             position: absolute;
             width: 100%;
-            height: 100%; /* FIXED: Changed from 60% to 100% for proper centering */
-            top: 0%; /* FIXED: Changed from 21% to 0% */
+            height: 60%;
+            top: 21%;
             left: 0%;
             transform: rotate(0deg);
             opacity: 1;
             z-index: 2;
             direction: inherit;
-            overflow: hidden; /* CRITICAL: Prevent text overflow */
+            overflow: hidden;
         }
 
         .ticker-crawler-outer {
@@ -595,15 +595,13 @@
             overflow: hidden;
             position: relative;
             display: flex;
-            align-items: center; /* FIXED: Center vertically */
+            align-items: center;
         }
 
         .ticker-crawler-inner {
-            /* FIXED: Start immediately, no delay */
             animation: ticker-scroll-flowics 60s linear infinite;
             position: absolute;
             white-space: nowrap;
-            /* FIXED: Start from right edge immediately */
             transform: translateX(100%);
         }
 
@@ -1203,7 +1201,7 @@
             return div;
         }
 
-        // Create news ticker graphic - FIXED POSITIONING AND ANIMATION
+        // Create news ticker graphic - FIXED: EXACT FLOWICS STRUCTURE
         function createNewsTicker(data, animation) {
             const div = document.createElement('div');
             div.className = `news-ticker ${animation}`;
@@ -1251,13 +1249,13 @@
                     </div>
                 </div>
 
-                <!-- Rectangle-n94 - Blue background for news -->
+                <!-- Rectangle-n94 - Blue background for news (CRITICAL: MUST BE VISIBLE) -->
                 <div class="ticker-news-bg"></div>
 
-                <!-- Container-n100 - Main content area (FIXED: Prevents overflow) -->
+                <!-- Container-n100 - Main content area -->
                 <div class="ticker-content-container">
                     <div class="ticker-inner-container">
-                        <!-- TextCrawler-n111 - Scrolling text (FIXED: Proper positioning) -->
+                        <!-- TextCrawler-n111 - Scrolling text -->
                         <div class="ticker-crawler">
                             <div class="ticker-crawler-outer">
                                 <div class="ticker-crawler-inner">
