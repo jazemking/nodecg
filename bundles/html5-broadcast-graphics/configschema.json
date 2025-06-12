@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "graphics": {
+      "type": "object",
+      "properties": {
+        "defaultAnimationDuration": {
+          "type": "number",
+          "default": 700,
+          "description": "Default animation duration in milliseconds"
+        },
+        "enableRegionDebugging": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show region boundaries for debugging"
+        },
+        "autoHideTimeout": {
+          "type": "number",
+          "default": 8000,
+          "description": "Auto-hide timeout for graphics in milliseconds"
+        }
+      }
+    },
+    "scenes": {
+      "type": "object",
+      "properties": {
+        "autoAdvance": {
+          "type": "boolean",
+          "default": false,
+          "description": "Automatically advance through scenes"
+        },
+        "loopScenes": {
+          "type": "boolean",
+          "default": false,
+          "description": "Loop back to first scene after last scene"
+        }
+      }
+    }
+  }
+}

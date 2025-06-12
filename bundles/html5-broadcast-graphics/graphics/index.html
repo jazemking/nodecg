@@ -1,0 +1,1299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flowics Graphics Clone - NodeCG Output</title>
+    <style>
+        /* Reset and base styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body, html {
+            width: 1920px;
+            height: 1080px;
+            background: transparent;
+            overflow: hidden;
+            font-family: 'Roboto', 'Arial', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        #root {
+            width: 100%;
+            height: 100%;
+            background: transparent;
+            position: relative;
+        }
+
+        /* Graphics Container */
+        .graphics-container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        /* Region debugging */
+        .region {
+            position: absolute;
+            transition: all 0.3s ease;
+            border: 2px dashed transparent;
+        }
+
+        .region-debug {
+            border-color: #00ff88;
+            background: rgba(0, 255, 136, 0.1);
+        }
+
+        .region-debug.active {
+            border-color: #ff6b35;
+            background: rgba(255, 107, 53, 0.15);
+        }
+
+        .region-label {
+            position: absolute;
+            top: -25px;
+            left: 0;
+            background: #00ff88;
+            color: #000;
+            padding: 2px 8px;
+            font-size: 11px;
+            font-weight: 600;
+            border-radius: 3px;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        .region-debug.active .region-label {
+            background: #ff6b35;
+            color: #fff;
+        }
+
+        /* Lower Third - Flowics Style */
+        .lower-third {
+            position: absolute;
+            bottom: 8%;
+            left: 0;
+            width: 100%;
+            height: auto;
+            display: flex;
+            align-items: flex-end;
+            z-index: 15;
+        }
+
+        .lower-third-container {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            border-top: 4px solid #00ff88;
+            width: 100%;
+            max-width: 85%;
+            position: relative;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .lower-third-content {
+            padding: 24px 40px;
+            position: relative;
+        }
+
+        .lower-third-title {
+            font-size: 42px;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 8px;
+            line-height: 1.1;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+            font-family: 'Roboto', sans-serif;
+        }
+
+        .lower-third-subtitle {
+            font-size: 24px;
+            color: #e0e6ed;
+            margin-bottom: 12px;
+            line-height: 1.3;
+            font-weight: 400;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        .lower-third-meta {
+            display: flex;
+            gap: 30px;
+            color: #b8c5d1;
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .lower-third-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .lower-third-accent {
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 6px;
+            background: linear-gradient(to bottom, #00ff88, #00cc6a);
+        }
+
+        /* Top Bar - Flowics Style */
+        .top-bar {
+            position: absolute;
+            top: 6%;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: linear-gradient(90deg, #1a1a2e 0%, rgba(26, 26, 46, 0.95) 70%, transparent 100%);
+            border-bottom: 3px solid #00ff88;
+            display: flex;
+            align-items: center;
+            padding: 0 40px;
+            z-index: 20;
+        }
+
+        .top-bar-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #ffffff;
+            font-size: 20px;
+            font-weight: 700;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        .top-bar-logo-icon {
+            width: 32px;
+            height: 32px;
+            background: #00ff88;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #1a1a2e;
+            font-weight: 900;
+        }
+
+        .top-bar-live {
+            margin-left: auto;
+            background: #ff3333;
+            color: #ffffff;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            animation: pulse 2s infinite;
+        }
+
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background: #ffffff;
+            border-radius: 50%;
+            animation: blink 1s infinite;
+        }
+
+        /* Score Box - Flowics Style */
+        .score-box {
+            position: absolute;
+            top: 12%;
+            right: 4%;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border: 2px solid #00ff88;
+            border-radius: 12px;
+            padding: 20px;
+            min-width: 280px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            z-index: 10;
+        }
+
+        .score-header {
+            text-align: center;
+            color: #00ff88;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .score-teams {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .team {
+            text-align: center;
+            flex: 1;
+        }
+
+        .team-name {
+            color: #ffffff;
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .team-score {
+            color: #00ff88;
+            font-size: 36px;
+            font-weight: 900;
+            font-family: 'Roboto Mono', monospace;
+        }
+
+        .score-vs {
+            color: #b8c5d1;
+            font-size: 16px;
+            font-weight: 600;
+            margin: 0 20px;
+        }
+
+        .score-time {
+            text-align: center;
+            color: #e0e6ed;
+            font-size: 14px;
+            border-top: 1px solid #2a2a4e;
+            padding-top: 12px;
+        }
+
+        /* REGION-N4 NEWS TICKER - EXACT FLOWICS POSITIONING */
+        .news-ticker {
+            cursor: default;
+            display: block;
+            position: absolute;
+            width: 100%;
+            height: 8%;
+            top: 92%;
+            left: 0%;
+            transform: rotate(0deg);
+            background-image: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0));
+            background-size: auto;
+            background-position: 0% 0%;
+            background-repeat: no-repeat;
+            background-clip: border-box;
+            z-index: 9;
+            direction: inherit;
+        }
+
+        /* Rectangle-n101 - Main black background */
+        .ticker-main-bg {
+            cursor: default;
+            display: block;
+            position: absolute;
+            width: 100%;
+            height: 75%;
+            top: 0%;
+            left: 0%;
+            transform: rotate(0deg);
+            border-width: 0px;
+            border-style: none;
+            border-color: rgb(0, 0, 0);
+            border-radius: 0px;
+            background-image: linear-gradient(rgb(0, 0, 0), rgb(0, 0, 0));
+            background-size: auto;
+            background-position: 0% 0%;
+            background-repeat: no-repeat;
+            background-clip: border-box;
+            opacity: 1;
+            z-index: 12;
+            direction: inherit;
+        }
+
+        /* Container-n103 - Right section with NEWS UPDATE */
+        .ticker-right-container {
+            cursor: default;
+            display: block;
+            position: absolute;
+            width: 18%;
+            height: 75%;
+            top: 0%;
+            left: 82%;
+            transform: rotate(0deg);
+            border-width: 1px;
+            border-style: none;
+            border-color: rgb(255, 0, 3);
+            border-radius: 0px;
+            background-image: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0));
+            background-size: auto;
+            background-position: 0% 0%;
+            background-repeat: no-repeat;
+            background-clip: border-box;
+            opacity: 1;
+            z-index: 13;
+            direction: inherit;
+        }
+
+        /* Rectangle-n112 - Yellow background */
+        .ticker-right-yellow {
+            cursor: default;
+            display: block;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0%;
+            left: 0%;
+            transform: rotate(0deg);
+            border-width: 0px;
+            border-style: none;
+            border-color: rgb(0, 0, 0);
+            border-radius: 0px;
+            background-image: linear-gradient(rgb(255, 207, 0), rgb(255, 207, 0));
+            background-size: auto;
+            background-position: 0% 0%;
+            background-repeat: no-repeat;
+            background-clip: border-box;
+            opacity: 1;
+            z-index: 3;
+            direction: inherit;
+        }
+
+        /* Rectangle-n105 - White overlay */
+        .ticker-right-white {
+            cursor: default;
+            display: block;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0%;
+            left: 0%;
+            transform: rotate(0deg);
+            border-width: 0px;
+            border-style: none;
+            border-color: rgb(0, 0, 0);
+            border-radius: 0px;
+            background-image: linear-gradient(rgb(255, 255, 255), rgb(255, 255, 255));
+            background-size: auto;
+            background-position: 0% 0%;
+            background-repeat: no-repeat;
+            background-clip: border-box;
+            opacity: 1;
+            z-index: 2;
+            direction: inherit;
+        }
+
+        /* Text-n106 - NEWS UPDATE text */
+        .ticker-right-text {
+            cursor: default;
+            display: block;
+            position: absolute;
+            width: 90%;
+            height: 100%;
+            top: 0%;
+            left: 5%;
+            transform: rotate(0deg);
+            opacity: 1;
+            z-index: 5;
+            direction: inherit;
+        }
+
+        .ticker-right-text-content {
+            height: 100%;
+            overflow: hidden;
+            white-space: pre-wrap;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: stretch;
+            font-family: Barlow, sans-serif;
+            font-weight: 700;
+            font-style: normal;
+            text-align: center;
+            color: rgb(20, 20, 20);
+            line-height: 1.2;
+            text-transform: uppercase;
+            font-size: 37.7891px;
+        }
+
+        /* Container-n107 - Left section with K24NEWS.COM */
+        .ticker-left-container {
+            cursor: default;
+            display: block;
+            position: absolute;
+            width: 15%;
+            height: 75%;
+            top: 0%;
+            left: 0%;
+            transform: rotate(0deg);
+            border-width: 1px;
+            border-style: none;
+            border-color: rgb(255, 0, 3);
+            border-radius: 0px;
+            background-image: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0));
+            background-size: auto;
+            background-position: 0% 0%;
+            background-repeat: no-repeat;
+            background-clip: border-box;
+            opacity: 1;
+            z-index: 16;
+            direction: inherit;
+        }
+
+        /* Rectangle-n108 - Gray background for K24NEWS */
+        .ticker-left-bg {
+            cursor: default;
+            display: block;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0%;
+            left: 0%;
+            transform: rotate(0deg);
+            border-width: 0px;
+            border-style: none;
+            border-color: rgb(0, 0, 0) rgb(255, 207, 0) rgb(0, 0, 0) rgb(0, 0, 0);
+            border-radius: 0px;
+            background-image: linear-gradient(rgb(97, 97, 97), rgb(97, 97, 97));
+            background-size: auto;
+            background-position: 0% 0%;
+            background-repeat: no-repeat;
+            background-clip: border-box;
+            opacity: 1;
+            z-index: 2;
+            direction: inherit;
+        }
+
+        /* Text-n109 - K24NEWS.COM text */
+        .ticker-left-text {
+            cursor: default;
+            display: block;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0%;
+            left: 0%;
+            transform: rotate(0deg);
+            opacity: 1;
+            z-index: 4;
+            direction: inherit;
+        }
+
+        .ticker-left-text-content {
+            height: 100%;
+            overflow: hidden;
+            white-space: pre-wrap;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: stretch;
+            font-family: Barlow, sans-serif;
+            font-weight: 700;
+            font-style: normal;
+            text-align: center;
+            color: rgb(255, 255, 255);
+            line-height: 1.2;
+            text-transform: uppercase;
+            font-size: 32.3906px;
+        }
+
+        /* Rectangle-n94 - Blue background for news */
+        .ticker-news-bg {
+            cursor: default;
+            display: block;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0%;
+            left: 0%;
+            transform: rotate(0deg);
+            border-width: 0px;
+            border-style: none;
+            border-color: rgb(0, 0, 0);
+            border-radius: 0px;
+            background-image: linear-gradient(rgb(0, 147, 185), rgb(0, 147, 185));
+            background-size: auto;
+            background-position: 0% 0%;
+            background-repeat: no-repeat;
+            background-clip: border-box;
+            opacity: 1;
+            z-index: 11;
+            direction: inherit;
+        }
+
+        /* Container-n100 - Main content area (FIXED: 67% width, starts at 15%) */
+        .ticker-content-container {
+            cursor: default;
+            display: block;
+            position: absolute;
+            width: 67%;
+            height: 75%;
+            top: 0%;
+            left: 15%;
+            transform: rotate(0deg);
+            border-width: 0px;
+            border-style: none;
+            border-color: rgb(255, 0, 3);
+            border-radius: 0px;
+            background-image: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0));
+            background-size: auto;
+            background-position: 0% 0%;
+            background-repeat: no-repeat;
+            background-clip: border-box;
+            opacity: 1;
+            z-index: 14;
+            direction: inherit;
+            overflow: hidden; /* CRITICAL: Prevent overflow past container */
+        }
+
+        /* Inner content wrapper */
+        .ticker-inner-container {
+            cursor: default;
+            display: block;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0%;
+            left: 0%;
+            transform: rotate(0deg);
+            border-width: 0px;
+            border-style: none;
+            border-color: rgb(0, 0, 0);
+            border-radius: 0px;
+            background-image: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0));
+            background-size: auto;
+            background-position: 0% 0%;
+            background-repeat: no-repeat;
+            background-clip: border-box;
+            opacity: 1;
+            z-index: 5;
+            direction: inherit;
+        }
+
+        /* TextCrawler-n111 - Scrolling text (FIXED POSITIONING) */
+        .ticker-crawler {
+            font-size: 30px;
+            white-space: nowrap;
+            font-family: Barlow, sans-serif;
+            font-weight: 500;
+            font-style: normal;
+            color: rgb(255, 255, 255);
+            text-transform: none;
+            cursor: default;
+            display: block;
+            position: absolute;
+            width: 100%;
+            height: 60%;
+            top: 21%;
+            left: 0%;
+            transform: rotate(0deg);
+            opacity: 1;
+            z-index: 2;
+            direction: inherit;
+            overflow: hidden; /* CRITICAL: Prevent text overflow */
+        }
+
+        .ticker-crawler-outer {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .ticker-crawler-inner {
+            /* FIXED: Start from right edge of container, not overlapping News Update */
+            transition-duration: 833.333s;
+            animation: ticker-scroll-flowics 60s linear infinite;
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            white-space: nowrap;
+        }
+
+        .ticker-crawler-item {
+            display: inline-block;
+        }
+
+        .ticker-crawler-text {
+            box-decoration-break: clone;
+            -webkit-box-decoration-break: clone;
+            cursor: default;
+            display: inline;
+            direction: inherit;
+        }
+
+        .ticker-crawler-separator {
+            margin: 0 20px;
+            color: rgb(255, 255, 255);
+        }
+
+        /* Social Media Card - Flowics Style */
+        .social-card {
+            position: absolute;
+            bottom: 20%;
+            right: 4%;
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 380px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+            z-index: 12;
+        }
+
+        .social-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .social-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #00ff88, #00cc6a);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 18px;
+        }
+
+        .social-user {
+            flex: 1;
+        }
+
+        .social-username {
+            color: #1a1a2e;
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+
+        .social-handle {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .social-platform {
+            width: 24px;
+            height: 24px;
+            background: #1da1f2;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .social-message {
+            color: #1a1a2e;
+            font-size: 16px;
+            line-height: 1.4;
+            margin-bottom: 16px;
+        }
+
+        .social-stats {
+            display: flex;
+            gap: 20px;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .social-stat {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Corner Logo - Flowics Style */
+        .corner-logo {
+            position: absolute;
+            top: 4%;
+            left: 4%;
+            background: rgba(26, 26, 46, 0.9);
+            border: 2px solid #00ff88;
+            border-radius: 8px;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 15;
+        }
+
+        .corner-logo-icon {
+            width: 28px;
+            height: 28px;
+            background: #00ff88;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #1a1a2e;
+            font-weight: 900;
+            font-size: 14px;
+        }
+
+        .corner-logo-text {
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Fullscreen Intro - Flowics Style */
+        .fullscreen-intro {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 30;
+        }
+
+        .intro-logo {
+            width: 120px;
+            height: 120px;
+            background: #00ff88;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #1a1a2e;
+            font-size: 48px;
+            font-weight: 900;
+            margin-bottom: 40px;
+            animation: scale-pulse 2s ease-in-out infinite;
+        }
+
+        .intro-title {
+            color: #ffffff;
+            font-size: 72px;
+            font-weight: 900;
+            text-align: center;
+            margin-bottom: 20px;
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+        }
+
+        .intro-subtitle {
+            color: #e0e6ed;
+            font-size: 32px;
+            font-weight: 400;
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .intro-line {
+            width: 200px;
+            height: 4px;
+            background: linear-gradient(90deg, transparent, #00ff88, transparent);
+            animation: line-expand 3s ease-in-out infinite;
+        }
+
+        /* Animation Classes */
+        .slide-in-left {
+            transform: translateX(-100%);
+        }
+
+        .slide-in-right {
+            transform: translateX(100%);
+        }
+
+        .slide-in-bottom {
+            transform: translateY(100%);
+        }
+
+        .slide-in-top {
+            transform: translateY(-100%);
+        }
+
+        .fade-in {
+            opacity: 0;
+        }
+
+        .scale-in {
+            transform: scale(0);
+            opacity: 0;
+        }
+
+        .visible {
+            transform: translateX(0) translateY(0) scale(1) !important;
+            opacity: 1 !important;
+            transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        /* Keyframe Animations */
+        @keyframes ticker-scroll-flowics {
+            0% { 
+                transform: translateX(100%) translateY(-50%); 
+            }
+            100% { 
+                transform: translateX(-100%) translateY(-50%); 
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        @keyframes scale-pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        @keyframes line-expand {
+            0%, 100% { width: 200px; }
+            50% { width: 400px; }
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 1920px) {
+            .lower-third-title { font-size: 38px; }
+            .lower-third-subtitle { font-size: 22px; }
+            .intro-title { font-size: 64px; }
+            .intro-subtitle { font-size: 28px; }
+        }
+    </style>
+</head>
+<body>
+    <div id="root">
+        <div class="graphics-container">
+            <!-- Regions container for debugging -->
+            <div id="regions-container"></div>
+            
+            <!-- Graphics container -->
+            <div id="graphics-container"></div>
+        </div>
+    </div>
+
+    <script>
+        // Graphics state
+        let activeGraphics = [];
+        let showRegions = false;
+        let graphicsData = {};
+
+        // Region definitions matching Flowics layout - ADDED REGION-N4
+        const regions = [
+            { id: 'top-bar', name: 'Top Bar', x: 0, y: 6, width: 100, height: 6 },
+            { id: 'corner-logo', name: 'Corner Logo', x: 4, y: 4, width: 20, height: 8 },
+            { id: 'score-box', name: 'Score Box', x: 75, y: 12, width: 21, height: 25 },
+            { id: 'social-card', name: 'Social Card', x: 65, y: 45, width: 31, height: 35 },
+            { id: 'lower-third', name: 'Lower Third', x: 0, y: 75, width: 85, height: 17 },
+            { id: 'region-n4', name: 'Region-n4 (News Ticker)', x: 0, y: 92, width: 100, height: 8 },
+            { id: 'fullscreen', name: 'Fullscreen', x: 0, y: 0, width: 100, height: 100 }
+        ];
+
+        // Graphics templates - UPDATED NEWS TICKER TO USE REGION-N4
+        const graphicTemplates = {
+            'top-bar': {
+                type: 'top-bar',
+                region: 'top-bar',
+                animation: 'slide-in-top'
+            },
+            'corner-logo': {
+                type: 'corner-logo',
+                region: 'corner-logo',
+                animation: 'scale-in'
+            },
+            'score-box': {
+                type: 'score-box',
+                region: 'score-box',
+                animation: 'fade-in'
+            },
+            'social-card': {
+                type: 'social-card',
+                region: 'social-card',
+                animation: 'slide-in-right'
+            },
+            'lower-third': {
+                type: 'lower-third',
+                region: 'lower-third',
+                animation: 'slide-in-left'
+            },
+            'news-ticker': {
+                type: 'news-ticker',
+                region: 'region-n4',
+                animation: 'slide-in-bottom'
+            },
+            'fullscreen-intro': {
+                type: 'fullscreen-intro',
+                region: 'fullscreen',
+                animation: 'fade-in'
+            }
+        };
+
+        // Initialize NodeCG integration
+        function initializeNodeCG() {
+            if (typeof nodecg !== 'undefined') {
+                const activeGraphicsRep = nodecg.Replicant('activeGraphics');
+                const showRegionsRep = nodecg.Replicant('showRegions');
+                const graphicsDataRep = nodecg.Replicant('graphicsData');
+
+                activeGraphicsRep.on('change', (newValue) => {
+                    activeGraphics = newValue || [];
+                    updateGraphics();
+                });
+
+                showRegionsRep.on('change', (newValue) => {
+                    showRegions = newValue || false;
+                    updateRegions();
+                });
+
+                graphicsDataRep.on('change', (newValue) => {
+                    graphicsData = newValue || {};
+                    updateGraphics();
+                });
+
+                // Set initial values
+                activeGraphics = activeGraphicsRep.value || [];
+                showRegions = showRegionsRep.value || false;
+                graphicsData = graphicsDataRep.value || {};
+            } else {
+                console.log('NodeCG not available, running in standalone mode');
+            }
+        }
+
+        // Update regions display
+        function updateRegions() {
+            const container = document.getElementById('regions-container');
+            container.innerHTML = '';
+
+            if (!showRegions) return;
+
+            regions.forEach(region => {
+                const div = document.createElement('div');
+                div.className = `region region-debug ${activeGraphics.some(id => graphicTemplates[id]?.region === region.id) ? 'active' : ''}`;
+                div.style.left = `${region.x}%`;
+                div.style.top = `${region.y}%`;
+                div.style.width = `${region.width}%`;
+                div.style.height = `${region.height}%`;
+                
+                const label = document.createElement('div');
+                label.className = 'region-label';
+                label.textContent = region.name;
+                div.appendChild(label);
+                
+                container.appendChild(div);
+            });
+        }
+
+        // Update graphics display
+        function updateGraphics() {
+            const container = document.getElementById('graphics-container');
+            container.innerHTML = '';
+
+            activeGraphics.forEach(graphicId => {
+                const template = graphicTemplates[graphicId];
+                if (!template) return;
+
+                const graphic = createGraphic(graphicId, template);
+                if (graphic) {
+                    container.appendChild(graphic);
+                    
+                    // Trigger animation
+                    setTimeout(() => {
+                        graphic.classList.add('visible');
+                    }, 50);
+                }
+            });
+        }
+
+        // Create graphic element
+        function createGraphic(id, template) {
+            const data = graphicsData[getDataKey(template.type)] || getDefaultData(template.type);
+            
+            switch (template.type) {
+                case 'top-bar':
+                    return createTopBar(data, template.animation);
+                case 'corner-logo':
+                    return createCornerLogo(data, template.animation);
+                case 'score-box':
+                    return createScoreBox(data, template.animation);
+                case 'social-card':
+                    return createSocialCard(data, template.animation);
+                case 'lower-third':
+                    return createLowerThird(data, template.animation);
+                case 'news-ticker':
+                    return createNewsTicker(data, template.animation);
+                case 'fullscreen-intro':
+                    return createFullscreenIntro(data, template.animation);
+                default:
+                    return null;
+            }
+        }
+
+        // Get data key for graphic type
+        function getDataKey(type) {
+            const mapping = {
+                'top-bar': 'topBar',
+                'corner-logo': 'logo',
+                'score-box': 'score',
+                'social-card': 'social',
+                'lower-third': 'lowerThird',
+                'news-ticker': 'ticker',
+                'fullscreen-intro': 'fullscreen'
+            };
+            return mapping[type] || type;
+        }
+
+        // Get default data for graphic type
+        function getDefaultData(type) {
+            const defaults = {
+                'top-bar': {
+                    logo: 'F',
+                    title: 'FLOWICS SPORTS',
+                    live: true
+                },
+                'corner-logo': {
+                    icon: 'F',
+                    text: 'LIVE'
+                },
+                'score-box': {
+                    homeTeam: 'EAGLES',
+                    awayTeam: 'LIONS',
+                    homeScore: 24,
+                    awayScore: 17,
+                    time: '12:45',
+                    period: '3rd Quarter'
+                },
+                'social-card': {
+                    platform: 'twitter',
+                    username: 'SportsFan',
+                    handle: '@sportsfan2024',
+                    avatar: 'SF',
+                    message: 'What an incredible play! This game is going to be remembered for years to come. #ChampionshipFinal #GameOfTheCentury'
+                },
+                'lower-third': {
+                    title: 'Championship Final Tonight',
+                    subtitle: 'Two powerhouse teams clash in what promises to be the game of the century',
+                    person: 'Sarah Johnson, Sports Analyst',
+                    location: 'Madison Square Garden, New York'
+                },
+                'news-ticker': {
+                    items: [
+                        'Breaking: Major trade deal announced between leading tech companies',
+                        'Weather Alert: Severe thunderstorm warning issued for metropolitan area',
+                        'Sports Update: Championship finals set for this weekend at the arena',
+                        'Market News: Stock market reaches new highs amid economic optimism'
+                    ]
+                },
+                'fullscreen-intro': {
+                    logo: 'F',
+                    title: 'CHAMPIONSHIP COVERAGE',
+                    subtitle: 'Live from Madison Square Garden'
+                }
+            };
+            return defaults[type] || {};
+        }
+
+        // Create top bar graphic
+        function createTopBar(data, animation) {
+            const div = document.createElement('div');
+            div.className = `top-bar ${animation}`;
+            
+            div.innerHTML = `
+                <div class="top-bar-logo">
+                    <div class="top-bar-logo-icon">${data.logo || 'F'}</div>
+                    <span>${data.title || 'FLOWICS SPORTS'}</span>
+                </div>
+                ${data.live ? `
+                    <div class="top-bar-live">
+                        <div class="live-dot"></div>
+                        <span>LIVE</span>
+                    </div>
+                ` : ''}
+            `;
+            
+            return div;
+        }
+
+        // Create corner logo graphic
+        function createCornerLogo(data, animation) {
+            const div = document.createElement('div');
+            div.className = `corner-logo ${animation}`;
+            
+            div.innerHTML = `
+                <div class="corner-logo-icon">${data.icon || 'F'}</div>
+                <div class="corner-logo-text">${data.text || 'LIVE'}</div>
+            `;
+            
+            return div;
+        }
+
+        // Create score box graphic
+        function createScoreBox(data, animation) {
+            const div = document.createElement('div');
+            div.className = `score-box ${animation}`;
+            
+            div.innerHTML = `
+                <div class="score-header">${data.period || 'Live'}</div>
+                <div class="score-teams">
+                    <div class="team">
+                        <div class="team-name">${data.homeTeam || 'HOME'}</div>
+                        <div class="team-score">${data.homeScore || 0}</div>
+                    </div>
+                    <div class="score-vs">VS</div>
+                    <div class="team">
+                        <div class="team-name">${data.awayTeam || 'AWAY'}</div>
+                        <div class="team-score">${data.awayScore || 0}</div>
+                    </div>
+                </div>
+                <div class="score-time">${data.time || '00:00'}</div>
+            `;
+            
+            return div;
+        }
+
+        // Create social card graphic
+        function createSocialCard(data, animation) {
+            const div = document.createElement('div');
+            div.className = `social-card ${animation}`;
+            
+            div.innerHTML = `
+                <div class="social-header">
+                    <div class="social-avatar">${data.avatar || 'U'}</div>
+                    <div class="social-user">
+                        <div class="social-username">${data.username || 'User'}</div>
+                        <div class="social-handle">${data.handle || '@user'}</div>
+                    </div>
+                    <div class="social-platform">T</div>
+                </div>
+                <div class="social-message">${data.message || 'Social media post content'}</div>
+                <div class="social-stats">
+                    <div class="social-stat">❤️ 24</div>
+                    <div class="social-stat">💬 8</div>
+                    <div class="social-stat">🔄 3</div>
+                </div>
+            `;
+            
+            return div;
+        }
+
+        // Create lower third graphic
+        function createLowerThird(data, animation) {
+            const div = document.createElement('div');
+            div.className = `lower-third ${animation}`;
+            
+            div.innerHTML = `
+                <div class="lower-third-container">
+                    <div class="lower-third-content">
+                        <div class="lower-third-title">${data.title || ''}</div>
+                        <div class="lower-third-subtitle">${data.subtitle || ''}</div>
+                        <div class="lower-third-meta">
+                            ${data.person ? `<div class="lower-third-meta-item">👤 ${data.person}</div>` : ''}
+                            ${data.location ? `<div class="lower-third-meta-item">📍 ${data.location}</div>` : ''}
+                        </div>
+                    </div>
+                    <div class="lower-third-accent"></div>
+                </div>
+            `;
+            
+            return div;
+        }
+
+        // Create news ticker graphic - FIXED POSITIONING AND ANIMATION
+        function createNewsTicker(data, animation) {
+            const div = document.createElement('div');
+            div.className = `news-ticker ${animation}`;
+            
+            const items = data.items || [
+                'Breaking: Major trade deal announced between leading tech companies',
+                'Weather Alert: Severe thunderstorm warning issued for metropolitan area',
+                'Sports Update: Championship finals set for this weekend at the arena',
+                'Market News: Stock market reaches new highs amid economic optimism'
+            ];
+            
+            // Combine items with bullet separators exactly like Flowics
+            const tickerText = items.join(' ⬤ ');
+            
+            div.innerHTML = `
+                <!-- Rectangle-n101 - Main black background -->
+                <div class="ticker-main-bg"></div>
+
+                <!-- Container-n103 - Right section with NEWS UPDATE -->
+                <div class="ticker-right-container">
+                    <div class="ticker-right-yellow"></div>
+                    <div class="ticker-right-white"></div>
+                    <div class="ticker-right-text">
+                        <div class="ticker-right-text-content">
+                            <div style="display: block;">
+                                <div style="display: inline-block;">
+                                    <div style="box-decoration-break: clone; -webkit-box-decoration-break: clone; cursor: default; display: inline; direction: inherit;">News Update</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Container-n107 - Left section with K24NEWS.COM -->
+                <div class="ticker-left-container">
+                    <div class="ticker-left-bg"></div>
+                    <div class="ticker-left-text">
+                        <div class="ticker-left-text-content">
+                            <div style="display: block;">
+                                <div style="display: inline-block;">
+                                    <div style="box-decoration-break: clone; -webkit-box-decoration-break: clone; cursor: default; display: inline; direction: inherit;">k24news.com/</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Rectangle-n94 - Blue background for news -->
+                <div class="ticker-news-bg"></div>
+
+                <!-- Container-n100 - Main content area (FIXED: Prevents overflow) -->
+                <div class="ticker-content-container">
+                    <div class="ticker-inner-container">
+                        <!-- TextCrawler-n111 - Scrolling text (FIXED: Proper positioning) -->
+                        <div class="ticker-crawler">
+                            <div class="ticker-crawler-outer">
+                                <div class="ticker-crawler-inner">
+                                    <div class="ticker-crawler-item">
+                                        <span class="ticker-crawler-text">${tickerText}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            return div;
+        }
+
+        // Create fullscreen intro graphic
+        function createFullscreenIntro(data, animation) {
+            const div = document.createElement('div');
+            div.className = `fullscreen-intro ${animation}`;
+            
+            div.innerHTML = `
+                <div class="intro-logo">${data.logo || 'F'}</div>
+                <div class="intro-title">${data.title || 'LIVE BROADCAST'}</div>
+                <div class="intro-subtitle">${data.subtitle || 'Professional Coverage'}</div>
+                <div class="intro-line"></div>
+            `;
+            
+            return div;
+        }
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeNodeCG();
+            updateRegions();
+            updateGraphics();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flowics Graphics Control</title>
+    <style>
+        body {
+            font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            margin: 0;
+            padding: 16px;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #ffffff;
+            min-height: 100vh;
+        }
+        
+        .control-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid #00ff88;
+        }
+        
+        .control-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #00ff88;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .control-title::before {
+            content: 'F';
+            width: 32px;
+            height: 32px;
+            background: #00ff88;
+            color: #1a1a2e;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 16px;
+        }
+        
+        .utility-buttons {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        
+        .utility-button {
+            padding: 12px 20px;
+            border: 2px solid #00ff88;
+            border-radius: 8px;
+            background: transparent;
+            color: #00ff88;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .utility-button:hover {
+            background: #00ff88;
+            color: #1a1a2e;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 255, 136, 0.3);
+        }
+        
+        .utility-button.active {
+            background: #00ff88;
+            color: #1a1a2e;
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin: 24px 0 16px 0;
+            color: #e0e6ed;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            padding-left: 20px;
+        }
+        
+        .section-title::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 20px;
+            background: #00ff88;
+            border-radius: 2px;
+        }
+        
+        .control-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        
+        .graphic-button {
+            padding: 20px;
+            border: 2px solid #2a2a4e;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #16213e 0%, #1a1a2e 100%);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .graphic-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #00ff88, #00cc6a);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+        
+        .graphic-button:hover {
+            border-color: #00ff88;
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(0, 255, 136, 0.2);
+        }
+        
+        .graphic-button:hover::before {
+            transform: scaleX(1);
+        }
+        
+        .graphic-button.active {
+            border-color: #00ff88;
+            background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);
+            color: #1a1a2e;
+            box-shadow: 0 8px 25px rgba(0, 255, 136, 0.4);
+        }
+        
+        .graphic-button.active::before {
+            transform: scaleX(1);
+            background: #1a1a2e;
+        }
+        
+        .graphic-title {
+            font-weight: 700;
+            font-size: 16px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .graphic-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 900;
+            background: #00ff88;
+            color: #1a1a2e;
+        }
+        
+        .graphic-button.active .graphic-icon {
+            background: #1a1a2e;
+            color: #00ff88;
+        }
+        
+        .graphic-type {
+            font-size: 12px;
+            opacity: 0.8;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .graphic-description {
+            font-size: 13px;
+            opacity: 0.7;
+            line-height: 1.4;
+        }
+        
+        .status-indicator {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #666;
+            transition: all 0.3s ease;
+        }
+        
+        .graphic-button.active .status-indicator {
+            background: #1a1a2e;
+            box-shadow: 0 0 10px rgba(26, 26, 46, 0.8);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+        
+        .quick-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid #2a2a4e;
+        }
+        
+        .quick-action {
+            flex: 1;
+            padding: 16px;
+            border: 2px solid #2a2a4e;
+            border-radius: 8px;
+            background: transparent;
+            color: #e0e6ed;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+        
+        .quick-action:hover {
+            border-color: #00ff88;
+            color: #00ff88;
+            background: rgba(0, 255, 136, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="control-header">
+        <div class="control-title">Flowics Graphics Control</div>
+        <div style="font-size: 12px; opacity: 0.7;">NodeCG Bundle v1.0</div>
+    </div>
+
+    <div class="utility-buttons">
+        <button class="utility-button" id="toggle-regions">Show Regions</button>
+        <button class="utility-button" id="clear-all">Clear All</button>
+        <button class="utility-button" id="preview-mode">Preview Mode</button>
+    </div>
+
+    <div class="section-title">Graphics Control Panel</div>
+    <div class="control-grid" id="graphics-grid">
+        <!-- Graphics buttons will be populated by JavaScript -->
+    </div>
+
+    <div class="quick-actions">
+        <button class="quick-action" id="show-all">Show All</button>
+        <button class="quick-action" id="hide-all">Hide All</button>
+        <button class="quick-action" id="refresh">Refresh</button>
+    </div>
+
+    <script>
+        const graphics = [
+            { 
+                id: 'top-bar', 
+                name: 'Top Bar', 
+                type: 'header',
+                icon: 'TB',
+                description: 'Main header with logo and live indicator'
+            },
+            { 
+                id: 'corner-logo', 
+                name: 'Corner Logo', 
+                type: 'branding',
+                icon: 'CL',
+                description: 'Small corner logo overlay'
+            },
+            { 
+                id: 'score-box', 
+                name: 'Score Box', 
+                type: 'sports',
+                icon: 'SB',
+                description: 'Live score display with team information'
+            },
+            { 
+                id: 'social-card', 
+                name: 'Social Card', 
+                type: 'social',
+                icon: 'SC',
+                description: 'Social media post display'
+            },
+            { 
+                id: 'lower-third', 
+                name: 'Lower Third', 
+                type: 'info',
+                icon: 'LT',
+                description: 'Main information banner'
+            },
+            { 
+                id: 'news-ticker', 
+                name: 'News Ticker', 
+                type: 'news',
+                icon: 'NT',
+                description: 'Scrolling news ticker'
+            },
+            { 
+                id: 'fullscreen-intro', 
+                name: 'Fullscreen Intro', 
+                type: 'transition',
+                icon: 'FS',
+                description: 'Full screen introduction graphic'
+            }
+        ];
+
+        const activeGraphics = nodecg.Replicant('activeGraphics');
+        const showRegions = nodecg.Replicant('showRegions');
+
+        // Create graphics buttons
+        const gridContainer = document.getElementById('graphics-grid');
+        graphics.forEach(graphic => {
+            const button = document.createElement('div');
+            button.className = 'graphic-button';
+            button.dataset.graphicId = graphic.id;
+            button.innerHTML = `
+                <div class="status-indicator"></div>
+                <div class="graphic-type">${graphic.type}</div>
+                <div class="graphic-title">
+                    <div class="graphic-icon">${graphic.icon}</div>
+                    ${graphic.name}
+                </div>
+                <div class="graphic-description">${graphic.description}</div>
+            `;
+            
+            button.addEventListener('click', () => {
+                const isActive = button.classList.contains('active');
+                nodecg.sendMessage('toggleGraphic', {
+                    graphicId: graphic.id,
+                    isVisible: !isActive
+                });
+            });
+            
+            gridContainer.appendChild(button);
+        });
+
+        // Update button states when replicant changes
+        activeGraphics.on('change', (newValue) => {
+            const buttons = document.querySelectorAll('.graphic-button');
+            buttons.forEach(button => {
+                const graphicId = button.dataset.graphicId;
+                if (newValue && newValue.includes(graphicId)) {
+                    button.classList.add('active');
+                } else {
+                    button.classList.remove('active');
+                }
+            });
+        });
+
+        // Regions toggle
+        const regionsButton = document.getElementById('toggle-regions');
+        regionsButton.addEventListener('click', () => {
+            const current = showRegions.value || false;
+            nodecg.sendMessage('toggleRegions', !current);
+        });
+
+        showRegions.on('change', (newValue) => {
+            regionsButton.classList.toggle('active', newValue);
+            regionsButton.textContent = newValue ? 'Hide Regions' : 'Show Regions';
+        });
+
+        // Clear all button
+        document.getElementById('clear-all').addEventListener('click', () => {
+            nodecg.sendMessage('setScene', null);
+        });
+
+        // Show all button
+        document.getElementById('show-all').addEventListener('click', () => {
+            graphics.forEach(graphic => {
+                nodecg.sendMessage('toggleGraphic', {
+                    graphicId: graphic.id,
+                    isVisible: true
+                });
+            });
+        });
+
+        // Hide all button
+        document.getElementById('hide-all').addEventListener('click', () => {
+            graphics.forEach(graphic => {
+                nodecg.sendMessage('toggleGraphic', {
+                    graphicId: graphic.id,
+                    isVisible: false
+                });
+            });
+        });
+
+        // Refresh button
+        document.getElementById('refresh').addEventListener('click', () => {
+            location.reload();
+        });
+
+        // Preview mode button
+        document.getElementById('preview-mode').addEventListener('click', () => {
+            window.open('/bundles/html5-broadcast-graphics/graphics/', '_blank');
+        });
+    </script>
+</body>
+</html>

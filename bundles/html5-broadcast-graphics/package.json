@@ -1,0 +1,60 @@
+{
+  "name": "html5-broadcast-graphics",
+  "version": "1.0.0",
+  "description": "Flowics-style HTML5 Broadcast Graphics Bundle for NodeCG",
+  "homepage": "https://github.com/jazemking/nodecg",
+  "author": {
+    "name": "Jazem King",
+    "email": "jazemking@example.com"
+  },
+  "files": [
+    "dashboard",
+    "graphics",
+    "extension.js"
+  ],
+  "keywords": [
+    "nodecg-bundle",
+    "broadcast",
+    "graphics",
+    "html5",
+    "streaming",
+    "flowics",
+    "sports"
+  ],
+  "nodecg": {
+    "compatibleRange": "^2.0.0",
+    "dashboardPanels": [
+      {
+        "name": "graphics-control",
+        "title": "Flowics Graphics Control",
+        "width": 4,
+        "file": "graphics-control.html",
+        "headerColor": "#1a1a2e"
+      },
+      {
+        "name": "scene-manager",
+        "title": "Scene Manager", 
+        "width": 3,
+        "file": "scene-manager.html",
+        "headerColor": "#00ff88"
+      },
+      {
+        "name": "system-status",
+        "title": "System Status",
+        "width": 2,
+        "file": "system-status.html",
+        "headerColor": "#16213e"
+      }
+    ],
+    "graphics": [
+      {
+        "file": "index.html",
+        "width": 1920,
+        "height": 1080
+      }
+    ]
+  },
+  "dependencies": {},
+  "devDependencies": {},
+  "license": "MIT"
+}
