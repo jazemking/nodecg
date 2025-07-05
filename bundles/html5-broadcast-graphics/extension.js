@@ -10,6 +10,11 @@ module.exports = function (nodecg) {
   const showRegions = nodecg.Replicant('showRegions', { defaultValue: false });
   const graphicsData = nodecg.Replicant('graphicsData', { 
     defaultValue: {
+      tickerSettings: {
+        speed: 25, // seconds for full scroll
+        direction: 'ltr', // 'ltr' or 'rtl'
+        separator: ' *** '
+      },
       topBar: {
         logo: 'F',
         title: 'FLOWICS SPORTS',
@@ -72,7 +77,9 @@ module.exports = function (nodecg) {
         graphicsData.value = {
           ...current,
           ticker: {
-            items: newsItems
+            ...current.ticker,
+            items: newsItems,
+            lastUpdated: new Date().toISOString()
           }
         };
         nodecg.log.info(`Loaded ${newsItems.length} news items from newsticker.txt`);
@@ -90,7 +97,9 @@ module.exports = function (nodecg) {
       fs.watchFile(tickerFilePath, (curr, prev) => {
         if (curr.mtime !== prev.mtime) {
           nodecg.log.info('newsticker.txt file changed, reloading...');
-          loadNewsTickerFromFile();
+          setTimeout(() => {
+            loadNewsTickerFromFile();
+          }, 100); // Small delay to ensure file write is complete
         }
       });
       nodecg.log.info('Watching newsticker.txt for changes');
@@ -140,18 +149,6 @@ module.exports = function (nodecg) {
     }
   });
 
-  // Log replicant changes for debugging
-  activeGraphics.on('change', (newValue, oldValue) => {
-    nodecg.log.info(`Active graphics changed from [${oldValue}] to [${newValue}]`);
-  });
-
-  currentScene.on('change', (newValue, oldValue) => {
-    nodecg.log.info(`Current scene changed from "${oldValue}" to "${newValue}"`);
-  });
-
-  showRegions.on('change', (newValue, oldValue) => {
-    nodecg.log.info(`Show regions changed from ${oldValue} to ${newValue}`);
-  });
   nodecg.listenFor('updateGraphicData', (data) => {
     const { type, updates } = data;
     const current = graphicsData.value;
@@ -162,6 +159,32 @@ module.exports = function (nodecg) {
         [type]: { ...current[type], ...updates }
       };
       nodecg.log.info(`Updated ${type} data:`, updates);
+    }
+  });
+
+  // Handle ticker settings updates
+  nodecg.listenFor('updateTickerSettings', (settings) => {
+    const current = graphicsData.value;
+    graphicsData.value = {
+      ...current,
+      tickerSettings: { ...current.tickerSettings, ...settings }
+    };
+    
+    nodecg.log.info('Updated ticker settings:', settings);
+  });
+
+  // Handle file upload for ticker
+  nodecg.listenFor('uploadTickerFile', (content) => {
+    try {
+      const tickerFilePath = path.join(__dirname, 'newsticker.txt');
+      fs.writeFileSync(tickerFilePath, content, 'utf8');
+      nodecg.log.info('News ticker file uploaded and saved');
+      
+      // File watcher will automatically pick up the change
+      return { success: true, message: 'File uploaded successfully' };
+    } catch (error) {
+      nodecg.log.error('Failed to save ticker file:', error);
+      return { success: false, message: error.message };
     }
   });
 

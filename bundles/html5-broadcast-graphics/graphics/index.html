@@ -368,7 +368,7 @@
 
         /* NEWS TICKER - FIXED BOTTOM POSITIONING */
         .news-ticker {
-            bottom: 0;
+            bottom: 7.4vh;
             left: 0;
             width: 100vw;
             height: 5.6vh;
@@ -426,12 +426,17 @@
             font-size: 0.94vw;
             font-weight: 500;
             white-space: nowrap;
-            animation: scroll-left 25s linear infinite;
+            animation: scroll-ltr 25s linear infinite;
         }
 
-        @keyframes scroll-left {
+        @keyframes scroll-ltr {
             0% { transform: translateX(100%); }
             100% { transform: translateX(-100%); }
+        }
+
+        @keyframes scroll-rtl {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
         }
 
         /* FULLSCREEN INTRO - Responsive viewport positioning */
@@ -657,6 +662,13 @@
         // Initialize graphics data
         graphicsData = { ...defaultGraphicsData };
 
+        // Ticker settings
+        let tickerSettings = {
+            speed: 25,
+            direction: 'ltr',
+            separator: ' *** '
+        };
+
         // Initialize NodeCG integration
         function initializeNodeCG() {
             try {
@@ -687,7 +699,41 @@
                     graphicsDataRep.on('change', (newValue) => {
                         console.log('Graphics data changed:', newValue);
                         graphicsData = { ...defaultGraphicsData, ...newValue };
+                        
+                        // Update ticker settings
+                        if (newValue && newValue.tickerSettings) {
+                            tickerSettings = { ...tickerSettings, ...newValue.tickerSettings };
+                        }
+                        
                         updateGraphics();
+                    });
+
+                    // Listen for real-time ticker updates
+                    nodecg.listenFor('tickerDataUpdated', (data) => {
+                        console.log('Ticker data updated in real-time:', data);
+                        if (data.items) {
+                            graphicsData.ticker = {
+                                ...graphicsData.ticker,
+                                items: data.items,
+                                lastUpdated: data.timestamp
+                            };
+                            
+                            // Update ticker if it's currently visible
+                            if (activeGraphics.includes('news-ticker')) {
+                                updateTickerContent();
+                            }
+                        }
+                    });
+
+                    // Listen for ticker settings updates
+                    nodecg.listenFor('tickerSettingsUpdated', (data) => {
+                        console.log('Ticker settings updated:', data);
+                        tickerSettings = { ...tickerSettings, ...data.settings };
+                        
+                        // Update ticker if it's currently visible
+                        if (activeGraphics.includes('news-ticker')) {
+                            updateTickerAnimation();
+                        }
                     });
 
                     // Set initial values when replicants are ready
@@ -696,10 +742,16 @@
                         showRegions = showRegionsRep.value || false;
                         graphicsData = { ...defaultGraphicsData, ...(graphicsDataRep.value || {}) };
                         
+                        // Load ticker settings
+                        if (graphicsDataRep.value && graphicsDataRep.value.tickerSettings) {
+                            tickerSettings = { ...tickerSettings, ...graphicsDataRep.value.tickerSettings };
+                        }
+                        
                         console.log('Initial NodeCG state loaded:', {
                             activeGraphics,
                             showRegions,
-                            graphicsData: Object.keys(graphicsData)
+                            graphicsData: Object.keys(graphicsData),
+                            tickerSettings
                         });
                         
                         updateGraphics();
@@ -951,15 +1003,13 @@
         // Create news ticker graphic - FIXED VISIBILITY SYSTEM
         function createNewsTicker() {
             const data = graphicsData.ticker || defaultGraphicsData.ticker;
+            const settings = graphicsData.tickerSettings || { speed: 25, direction: 'ltr', separator: ' *** ' };
             const div = document.createElement('div');
             div.className = 'graphic news-ticker';
             
-            // Cycle through ticker items
-            let currentIndex = 0;
+            // Join all items with separator for continuous scrolling
             const items = data.items || ['News Update'];
-            
-            // Join all items with *** separator for continuous scrolling
-            const tickerText = items.join(' *** ');
+            const tickerText = items.join(settings.separator);
             
             div.innerHTML = `
                 <div class="ticker-label">NEWS UPDATE</div>
@@ -968,7 +1018,34 @@
                 </div>
             `;
             
+            // Apply animation settings after creation
+            setTimeout(() => {
+                applyTickerAnimation(div, settings);
+            }, 100);
+            
             return div;
+        }
+
+        // Apply ticker animation settings
+        function applyTickerAnimation(tickerElement, settings) {
+            if (!tickerElement) return;
+            
+            const textElement = tickerElement.querySelector('.ticker-text');
+            if (!textElement) return;
+            
+            // Remove existing animation
+            textElement.style.animation = 'none';
+            
+            // Force reflow
+            textElement.offsetHeight;
+            
+            // Apply new animation
+            const animationName = settings.direction === 'rtl' ? 'scroll-rtl' : 'scroll-ltr';
+            const duration = settings.speed || 25;
+            
+            textElement.style.animation = `${animationName} ${duration}s linear infinite`;
+            
+            console.log(`Applied ticker animation: ${animationName}, ${duration}s`);
         }
 
         // Create fullscreen intro graphic
@@ -1033,6 +1110,25 @@
                     break;
                 case '6':
                     toggleGraphic('fullscreen-intro');
+                    break;
+                case 's':
+                    // Test speed change
+                    const currentTicker = document.querySelector('.news-ticker .ticker-text');
+                    if (currentTicker) {
+                        const newSpeed = currentTicker.style.animationDuration === '10s' ? 25 : 10;
+                        currentTicker.style.animationDuration = `${newSpeed}s`;
+                        console.log('Ticker speed changed to:', newSpeed);
+                    }
+                    break;
+                case 'f':
+                    // Test direction change
+                    const currentTickerDir = document.querySelector('.news-ticker .ticker-text');
+                    if (currentTickerDir) {
+                        const currentAnim = currentTickerDir.style.animationName || 'scroll-ltr';
+                        const newAnim = currentAnim === 'scroll-ltr' ? 'scroll-rtl' : 'scroll-ltr';
+                        currentTickerDir.style.animationName = newAnim;
+                        console.log('Ticker direction changed to:', newAnim);
+                    }
                     break;
             }
         });
@@ -1127,6 +1223,8 @@
         console.log('R - Toggle regions');
         console.log('H - Hide all graphics');
         console.log('1-6 - Toggle individual graphics');
+        console.log('S - Test ticker speed');
+        console.log('F - Test ticker direction');
         console.log('Graphics system ready for control panel communication');
     </script>
 </body>

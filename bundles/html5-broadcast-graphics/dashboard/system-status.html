@@ -97,11 +97,18 @@
         <span class="status-value" id="regions-status">No</span>
     </div>
 
-    <div class="section-title">Quick Data Update</div>
+    <div class="section-title">News Ticker Settings</div>
+    
     <div class="data-editor">
-        <input type="text" class="data-input" id="lower-third-title" placeholder="Lower Third Title">
-        <input type="text" class="data-input" id="lower-third-subtitle" placeholder="Lower Third Subtitle">
-        <button class="update-button" id="update-lower-third">Update Lower Third</button>
+        <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+            <input type="number" class="data-input" id="ticker-speed" placeholder="Speed (seconds)" min="5" max="60" value="25" style="flex: 1;">
+            <select class="data-input" id="ticker-direction" style="flex: 1;">
+                <option value="ltr">Left to Right</option>
+                <option value="rtl">Right to Left</option>
+            </select>
+        </div>
+        <input type="text" class="data-input" id="ticker-separator" placeholder="Separator" value=" *** " style="margin-bottom: 8px;">
+        <button class="update-button" id="update-ticker-settings">Update Ticker Settings</button>
     </div>
 
     <div class="data-editor">
@@ -110,6 +117,18 @@
         <div style="font-size: 11px; color: #6b7280; margin-top: 4px;">
             Upload a .txt file with one news item per line
         </div>
+    </div>
+
+    <div class="data-editor">
+        <textarea class="data-input" id="manual-news" placeholder="Enter news items, one per line..." rows="4" style="resize: vertical; margin-bottom: 8px;"></textarea>
+        <button class="update-button" id="update-manual-news">Update News Manually</button>
+    </div>
+
+    <div class="section-title">Quick Data Update</div>
+    <div class="data-editor">
+        <input type="text" class="data-input" id="lower-third-title" placeholder="Lower Third Title">
+        <input type="text" class="data-input" id="lower-third-subtitle" placeholder="Lower Third Subtitle">
+        <button class="update-button" id="update-lower-third">Update Lower Third</button>
     </div>
 
     <div class="data-editor">
@@ -155,6 +174,77 @@
             regionsElement.className = newValue ? 'status-value status-warning' : 'status-value status-inactive';
         });
 
+        // Load current ticker settings
+        graphicsData.on('change', (newValue) => {
+            if (newValue && newValue.tickerSettings) {
+                const settings = newValue.tickerSettings;
+                document.getElementById('ticker-speed').value = settings.speed || 25;
+                document.getElementById('ticker-direction').value = settings.direction || 'ltr';
+                document.getElementById('ticker-separator').value = settings.separator || ' *** ';
+            }
+        });
+
+        // Ticker settings update handler
+        document.getElementById('update-ticker-settings').addEventListener('click', () => {
+            const speed = parseInt(document.getElementById('ticker-speed').value) || 25;
+            const direction = document.getElementById('ticker-direction').value || 'ltr';
+            const separator = document.getElementById('ticker-separator').value || ' *** ';
+            
+            nodecg.sendMessage('updateTickerSettings', {
+                speed: speed,
+                direction: direction,
+                separator: separator
+            });
+            
+            console.log('Updated ticker settings:', { speed, direction, separator });
+        });
+
+        // Ticker file upload handler
+        document.getElementById('upload-ticker').addEventListener('click', () => {
+            const fileInput = document.getElementById('ticker-file');
+            const file = fileInput.files[0];
+            
+            if (file && file.type === 'text/plain') {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const content = e.target.result;
+                    
+                    // Send file content to be saved
+                    nodecg.sendMessage('uploadTickerFile', content, (response) => {
+                        if (response && response.success) {
+                            alert('News ticker file uploaded successfully! Changes will appear automatically.');
+                        } else {
+                            alert('Failed to upload file: ' + (response ? response.message : 'Unknown error'));
+                        }
+                    });
+                    
+                    fileInput.value = ''; // Clear the input
+                };
+                reader.readAsText(file);
+            } else {
+                alert('Please select a valid .txt file.');
+            }
+        });
+
+        // Manual news entry handler
+        document.getElementById('update-manual-news').addEventListener('click', () => {
+            const content = document.getElementById('manual-news').value.trim();
+            
+            if (content) {
+                // Send content to be saved as file
+                nodecg.sendMessage('uploadTickerFile', content, (response) => {
+                    if (response && response.success) {
+                        alert('News ticker updated successfully! Changes will appear automatically.');
+                        document.getElementById('manual-news').value = ''; // Clear the textarea
+                    } else {
+                        alert('Failed to update news: ' + (response ? response.message : 'Unknown error'));
+                    }
+                });
+            } else {
+                alert('Please enter some news content.');
+            }
+        });
+
         // Data update handlers
         document.getElementById('update-lower-third').addEventListener('click', () => {
             const title = document.getElementById('lower-third-title').value;
@@ -173,40 +263,6 @@
                 // Clear inputs
                 document.getElementById('lower-third-title').value = '';
                 document.getElementById('lower-third-subtitle').value = '';
-            }
-        });
-
-        // Ticker file upload handler
-        document.getElementById('upload-ticker').addEventListener('click', () => {
-            const fileInput = document.getElementById('ticker-file');
-            const file = fileInput.files[0];
-            
-            if (file && file.type === 'text/plain') {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const content = e.target.result;
-                    const newsItems = content
-                        .split('\n')
-                        .map(line => line.trim())
-                        .filter(line => line.length > 0);
-                    
-                    if (newsItems.length > 0) {
-                        nodecg.sendMessage('updateGraphicData', {
-                            type: 'ticker',
-                            updates: {
-                                items: newsItems
-                            }
-                        });
-                        
-                        alert(`Uploaded ${newsItems.length} news items successfully!`);
-                        fileInput.value = ''; // Clear the input
-                    } else {
-                        alert('No valid news items found in the file.');
-                    }
-                };
-                reader.readAsText(file);
-            } else {
-                alert('Please select a valid .txt file.');
             }
         });
 
