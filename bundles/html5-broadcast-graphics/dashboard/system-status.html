@@ -190,13 +190,24 @@
             const direction = document.getElementById('ticker-direction').value || 'ltr';
             const separator = document.getElementById('ticker-separator').value || ' *** ';
             
+            console.log('Sending ticker settings update:', { speed, direction, separator });
+            
             nodecg.sendMessage('updateTickerSettings', {
                 speed: speed,
                 direction: direction,
                 separator: separator
             });
             
-            console.log('Updated ticker settings:', { speed, direction, separator });
+            // Show feedback to user
+            const button = document.getElementById('update-ticker-settings');
+            const originalText = button.textContent;
+            button.textContent = 'Updated!';
+            button.style.background = '#059669';
+            
+            setTimeout(() => {
+                button.textContent = originalText;
+                button.style.background = '#3b82f6';
+            }, 2000);
         });
 
         // Ticker file upload handler
@@ -212,7 +223,16 @@
                     // Send file content to be saved
                     nodecg.sendMessage('uploadTickerFile', content, (response) => {
                         if (response && response.success) {
-                            alert('News ticker file uploaded successfully! Changes will appear automatically.');
+                            // Show success feedback
+                            const button = document.getElementById('upload-ticker');
+                            const originalText = button.textContent;
+                            button.textContent = 'Uploaded!';
+                            button.style.background = '#059669';
+                            
+                            setTimeout(() => {
+                                button.textContent = originalText;
+                                button.style.background = '#3b82f6';
+                            }, 2000);
                         } else {
                             alert('Failed to upload file: ' + (response ? response.message : 'Unknown error'));
                         }
@@ -234,8 +254,17 @@
                 // Send content to be saved as file
                 nodecg.sendMessage('uploadTickerFile', content, (response) => {
                     if (response && response.success) {
-                        alert('News ticker updated successfully! Changes will appear automatically.');
+                        // Show success feedback
+                        const button = document.getElementById('update-manual-news');
+                        const originalText = button.textContent;
+                        button.textContent = 'Updated!';
+                        button.style.background = '#059669';
                         document.getElementById('manual-news').value = ''; // Clear the textarea
+                        
+                        setTimeout(() => {
+                            button.textContent = originalText;
+                            button.style.background = '#3b82f6';
+                        }, 2000);
                     } else {
                         alert('Failed to update news: ' + (response ? response.message : 'Unknown error'));
                     }

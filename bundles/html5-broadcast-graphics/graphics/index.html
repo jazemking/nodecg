@@ -745,6 +745,7 @@
                         // Load ticker settings
                         if (graphicsDataRep.value && graphicsDataRep.value.tickerSettings) {
                             tickerSettings = { ...tickerSettings, ...graphicsDataRep.value.tickerSettings };
+                            console.log('Loaded initial ticker settings:', tickerSettings);
                         }
                         
                         console.log('Initial NodeCG state loaded:', {

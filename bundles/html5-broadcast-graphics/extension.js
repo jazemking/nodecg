@@ -99,6 +99,15 @@ module.exports = function (nodecg) {
           nodecg.log.info('newsticker.txt file changed, reloading...');
           setTimeout(() => {
             loadNewsTickerFromFile();
+            
+            // Notify graphics of the change
+            const current = graphicsData.value;
+            if (current.ticker && current.ticker.items) {
+              nodecg.sendMessage('tickerDataUpdated', {
+                items: current.ticker.items,
+                timestamp: new Date().toISOString()
+              });
+            }
           }, 100); // Small delay to ensure file write is complete
         }
       });
@@ -171,6 +180,12 @@ module.exports = function (nodecg) {
     };
     
     nodecg.log.info('Updated ticker settings:', settings);
+    
+    // Immediately notify graphics of the change
+    nodecg.sendMessage('tickerSettingsUpdated', {
+      settings: settings,
+      timestamp: new Date().toISOString()
+    });
   });
 
   // Handle file upload for ticker
@@ -180,7 +195,20 @@ module.exports = function (nodecg) {
       fs.writeFileSync(tickerFilePath, content, 'utf8');
       nodecg.log.info('News ticker file uploaded and saved');
       
-      // File watcher will automatically pick up the change
+      // Force immediate reload and notify graphics
+      setTimeout(() => {
+        loadNewsTickerFromFile();
+        
+        // Notify graphics of ticker data change
+        const current = graphicsData.value;
+        if (current.ticker && current.ticker.items) {
+          nodecg.sendMessage('tickerDataUpdated', {
+            items: current.ticker.items,
+            timestamp: new Date().toISOString()
+          });
+        }
+      }, 100);
+      
       return { success: true, message: 'File uploaded successfully' };
     } catch (error) {
       nodecg.log.error('Failed to save ticker file:', error);

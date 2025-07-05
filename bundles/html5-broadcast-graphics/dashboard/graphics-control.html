@@ -356,6 +356,7 @@
 
         // Update button states when replicant changes
         activeGraphics.on('change', (newValue) => {
+            console.log('Active graphics replicant changed:', newValue);
             const buttons = document.querySelectorAll('.graphic-button');
             buttons.forEach(button => {
                 const graphicId = button.dataset.graphicId;
@@ -371,17 +372,20 @@
         const regionsButton = document.getElementById('toggle-regions');
         regionsButton.addEventListener('click', () => {
             const current = showRegions.value || false;
+            console.log('Toggling regions from', current, 'to', !current);
             nodecg.sendMessage('toggleRegions', !current);
         });
 
         showRegions.on('change', (newValue) => {
+            console.log('Show regions replicant changed:', newValue);
             regionsButton.classList.toggle('active', newValue);
             regionsButton.textContent = newValue ? 'Hide Regions' : 'Show Regions';
         });
 
         // Clear all button
         document.getElementById('clear-all').addEventListener('click', () => {
-            nodecg.sendMessage('setScene', null);
+            console.log('Clearing all graphics');
+            activeGraphics.value = [];
         });
 
         // Show all button
