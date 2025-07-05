@@ -242,6 +242,10 @@
 
     <div class="status-bar">
         <div class="status-item">
+            <span class="status-label">NodeCG Status:</span>
+            <span class="status-value" id="nodecg-status">Connecting...</span>
+        </div>
+        <div class="status-item">
             <span class="status-label">Current Scene:</span>
             <span class="status-value" id="current-scene-name">None</span>
         </div>
@@ -256,6 +260,7 @@
     </div>
 
     <script>
+        // Scene definitions
         const scenes = [
             { 
                 id: 'intro', 
@@ -294,10 +299,39 @@
             }
         ];
 
-        const currentScene = nodecg.Replicant('currentScene');
+        // NodeCG Replicants
+        let activeGraphicsRep, currentSceneRep;
+        
+        // Playback state
         let isPlaying = false;
         let currentSceneIndex = 0;
         let playbackTimeout = null;
+
+        // Wait for NodeCG to be ready
+        if (typeof nodecg !== 'undefined') {
+            nodecg.readyReplicants(['activeGraphics', 'currentScene']).then(() => {
+                console.log('NodeCG replicants ready');
+                
+                // Initialize replicants
+                activeGraphicsRep = nodecg.Replicant('activeGraphics');
+                currentSceneRep = nodecg.Replicant('currentScene');
+
+                // Set up listeners
+                currentSceneRep.on('change', updateSceneDisplay);
+
+                // Initial update
+                updateSceneDisplay(currentSceneRep.value);
+                updateStatus();
+
+                document.getElementById('nodecg-status').textContent = 'Connected';
+            }).catch(error => {
+                console.error('NodeCG initialization failed:', error);
+                document.getElementById('nodecg-status').textContent = 'Error';
+            });
+        } else {
+            console.error('NodeCG not available');
+            document.getElementById('nodecg-status').textContent = 'Not Available';
+        }
 
         // Create scene buttons
         const sceneList = document.getElementById('scene-list');
@@ -319,7 +353,7 @@
             
             button.addEventListener('click', () => {
                 currentSceneIndex = index;
-                nodecg.sendMessage('setScene', scene.id);
+                setScene(scene.id);
                 stopPlayback();
                 updateStatus();
             });
@@ -327,12 +361,33 @@
             sceneList.appendChild(button);
         });
 
-        // Update active scene display
-        currentScene.on('change', (newValue) => {
+        // Set scene function
+        function setScene(sceneId) {
+            if (!currentSceneRep || !activeGraphicsRep) {
+                console.warn('NodeCG not ready');
+                return;
+            }
+
+            currentSceneRep.value = sceneId;
+            
+            if (sceneId) {
+                const scene = scenes.find(s => s.id === sceneId);
+                if (scene) {
+                    activeGraphicsRep.value = scene.graphics;
+                    console.log('Set scene:', sceneId, 'Graphics:', scene.graphics);
+                }
+            } else {
+                activeGraphicsRep.value = [];
+                console.log('Cleared all graphics');
+            }
+        }
+
+        // Update scene display
+        function updateSceneDisplay(sceneId) {
             const buttons = document.querySelectorAll('.scene-button');
             buttons.forEach(button => {
-                const sceneId = button.dataset.sceneId;
-                if (newValue === sceneId) {
+                const buttonSceneId = button.dataset.sceneId;
+                if (buttonSceneId === sceneId) {
                     button.classList.add('active');
                     currentSceneIndex = parseInt(button.dataset.sceneIndex);
                 } else {
@@ -340,7 +395,7 @@
                 }
             });
             updateStatus();
-        });
+        }
 
         // Playback controls
         const playStopButton = document.getElementById('play-stop');
@@ -348,6 +403,11 @@
         const resetButton = document.getElementById('reset-all');
 
         function startPlayback() {
+            if (!currentSceneRep || !activeGraphicsRep) {
+                console.warn('NodeCG not ready');
+                return;
+            }
+
             isPlaying = true;
             playStopButton.innerHTML = '⏸ Stop';
             playStopButton.classList.add('playing');
@@ -356,7 +416,7 @@
                 if (!isPlaying) return;
                 
                 const scene = scenes[currentSceneIndex];
-                nodecg.sendMessage('setScene', scene.id);
+                setScene(scene.id);
                 
                 playbackTimeout = setTimeout(() => {
                     currentSceneIndex = (currentSceneIndex + 1) % scenes.length;
@@ -398,6 +458,7 @@
             playbackStatus.textContent = isPlaying ? 'Playing' : 'Stopped';
         }
 
+        // Event listeners
         playStopButton.addEventListener('click', () => {
             if (isPlaying) {
                 stopPlayback();
@@ -409,19 +470,20 @@
         nextButton.addEventListener('click', () => {
             if (scenes.length === 0) return;
             currentSceneIndex = (currentSceneIndex + 1) % scenes.length;
-            nodecg.sendMessage('setScene', scenes[currentSceneIndex].id);
+            setScene(scenes[currentSceneIndex].id);
             updateStatus();
         });
 
         resetButton.addEventListener('click', () => {
             stopPlayback();
             currentSceneIndex = 0;
-            nodecg.sendMessage('setScene', null);
+            setScene(null);
             updateStatus();
         });
 
         // Initialize status
         updateStatus();
+        console.log('Scene Manager initialized');
     </script>
 </body>
 </html>

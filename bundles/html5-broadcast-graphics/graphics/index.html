@@ -69,23 +69,30 @@
             color: white;
         }
 
+        /* GRAPHIC BASE STYLES */
+        .graphic {
+            position: absolute;
+            transition: all 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .graphic.visible {
+            opacity: 1;
+        }
+
         /* TOP BAR - Responsive viewport positioning */
         .top-bar {
-            position: absolute;
             top: 0;
             left: 0;
             width: 100vw;
-            height: 7.4vh; /* 80px / 1080px = 7.4% */
+            height: 7.4vh;
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 3.1vw; /* 60px / 1920px = 3.1% */
+            padding: 0 3.1vw;
             z-index: 50;
-            transition: all 0.7s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .top-bar.slide-in-top {
             transform: translateY(-100%);
         }
 
@@ -96,12 +103,12 @@
         .top-bar-left {
             display: flex;
             align-items: center;
-            gap: 1.6vw; /* 30px / 1920px = 1.6% */
+            gap: 1.6vw;
         }
 
         .top-bar-logo {
-            width: 2.6vw; /* 50px / 1920px = 2.6% */
-            height: 4.6vh; /* 50px / 1080px = 4.6% */
+            width: 2.6vw;
+            height: 4.6vh;
             background: #00ff88;
             color: #1a1a2e;
             border-radius: 50%;
@@ -139,11 +146,10 @@
 
         /* CORNER LOGO - Responsive viewport positioning */
         .corner-logo {
-            position: absolute;
-            top: 2.8vh; /* 30px / 1080px = 2.8% */
-            left: 1.6vw; /* 30px / 1920px = 1.6% */
-            width: 5.2vw; /* 100px / 1920px = 5.2% */
-            height: 9.3vh; /* 100px / 1080px = 9.3% */
+            top: 2.8vh;
+            left: 1.6vw;
+            width: 5.2vw;
+            height: 9.3vh;
             background: rgba(26, 26, 46, 0.9);
             border: 0.16vw solid #00ff88;
             border-radius: 0.8vw;
@@ -152,17 +158,11 @@
             align-items: center;
             justify-content: center;
             z-index: 40;
-            transition: all 0.7s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .corner-logo.scale-in {
             transform: scale(0);
-            opacity: 0;
         }
 
         .corner-logo.visible {
             transform: scale(1);
-            opacity: 1;
         }
 
         .corner-logo-icon {
@@ -182,26 +182,19 @@
 
         /* SCORE BOX - Responsive viewport positioning */
         .score-box {
-            position: absolute;
-            top: 2.8vh; /* 30px / 1080px = 2.8% */
-            right: 1.6vw; /* 30px / 1920px = 1.6% */
-            width: 18.2vw; /* 350px / 1920px = 18.2% */
+            top: 2.8vh;
+            right: 1.6vw;
+            width: 18.2vw;
             background: rgba(26, 26, 46, 0.95);
             border: 0.16vw solid #00ff88;
             border-radius: 0.8vw;
             overflow: hidden;
             z-index: 40;
-            transition: all 0.7s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .score-box.slide-in-right {
             transform: translateX(100%);
-            opacity: 0;
         }
 
         .score-box.visible {
             transform: translateX(0);
-            opacity: 1;
         }
 
         .score-header {
@@ -244,26 +237,19 @@
 
         /* SOCIAL CARD - Responsive viewport positioning */
         .social-card {
-            position: absolute;
-            top: 37vh; /* 400px / 1080px = 37% */
-            right: 1.6vw; /* 30px / 1920px = 1.6% */
-            width: 20.8vw; /* 400px / 1920px = 20.8% */
+            top: 37vh;
+            right: 1.6vw;
+            width: 20.8vw;
             background: rgba(255, 255, 255, 0.95);
             border-radius: 0.8vw;
             padding: 2.3vh 1.3vw;
             box-shadow: 0 0.9vh 3.7vh rgba(0, 0, 0, 0.3);
             z-index: 30;
-            transition: all 0.7s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .social-card.slide-in-right {
             transform: translateX(100%);
-            opacity: 0;
         }
 
         .social-card.visible {
             transform: translateX(0);
-            opacity: 1;
         }
 
         .social-header {
@@ -325,15 +311,10 @@
 
         /* LOWER THIRD - Responsive viewport positioning */
         .lower-third {
-            position: absolute;
-            bottom: 13.9vh; /* 150px / 1080px = 13.9% */
+            bottom: 13.9vh;
             left: 0;
             width: 100vw;
             z-index: 20;
-            transition: all 0.7s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .lower-third.slide-in-left {
             transform: translateX(-100%);
         }
 
@@ -344,11 +325,11 @@
         .lower-third-content {
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
             display: flex;
-            max-width: 52.1vw; /* 1000px / 1920px = 52.1% */
+            max-width: 52.1vw;
         }
 
         .lower-third-accent {
-            width: 0.42vw; /* 8px / 1920px = 0.42% */
+            width: 0.42vw;
             background: linear-gradient(to bottom, #00ff88, #00cc6a);
         }
 
@@ -385,22 +366,17 @@
             gap: 0.42vw;
         }
 
-        /* NEWS TICKER - RESPONSIVE VIEWPORT POSITIONING */
+        /* NEWS TICKER - FIXED BOTTOM POSITIONING */
         .news-ticker {
-            position: absolute;
-            bottom: 7.4vh; /* 80px / 1080px = 7.4% - FIXED POSITION FROM BOTTOM */
+            bottom: 0;
             left: 0;
             width: 100vw;
-            height: 5.6vh; /* 60px / 1080px = 5.6% */
+            height: 5.6vh;
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
             display: flex;
             align-items: center;
             z-index: 60;
-            transition: all 0.7s cubic-bezier(0.4, 0, 0.2, 1);
             border-top: 0.28vh solid #00ff88;
-        }
-
-        .news-ticker.slide-in-bottom {
             transform: translateY(100%);
         }
 
@@ -423,7 +399,6 @@
             position: relative;
         }
 
-        /* Arrow effect matching reference */
         .ticker-label::after {
             content: '';
             position: absolute;
@@ -461,7 +436,6 @@
 
         /* FULLSCREEN INTRO - Responsive viewport positioning */
         .fullscreen-intro {
-            position: absolute;
             top: 0;
             left: 0;
             width: 100vw;
@@ -472,10 +446,6 @@
             align-items: center;
             justify-content: center;
             z-index: 100;
-            transition: all 0.7s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .fullscreen-intro.fade-in {
             opacity: 0;
         }
 
@@ -612,7 +582,8 @@
             Press 'D' to toggle debug<br>
             Press 'T' for ticker test<br>
             Press 'R' for regions<br>
-            Press '1-6' for graphics
+            Press '1-6' for graphics<br>
+            Press 'H' to hide all
         </div>
     </div>
 
@@ -631,7 +602,7 @@
             { id: 'score-box', name: 'Score Box', x: 80.2, y: 2.8, width: 18.2, height: 18.5 },
             { id: 'social-card', name: 'Social Card', x: 77.6, y: 37, width: 20.8, height: 23.1 },
             { id: 'lower-third', name: 'Lower Third', x: 0, y: 78.7, width: 52.1, height: 13.9 },
-            { id: 'news-ticker', name: 'News Ticker', x: 0, y: 87, width: 100, height: 5.6 },
+            { id: 'news-ticker', name: 'News Ticker', x: 0, y: 94.4, width: 100, height: 5.6 },
             { id: 'fullscreen', name: 'Fullscreen', x: 0, y: 0, width: 100, height: 100 }
         ];
 
@@ -749,8 +720,8 @@
             console.log('Initializing standalone mode...');
             isNodeCGMode = false;
             
-            // Show news ticker by default for testing
-            activeGraphics = ['news-ticker'];
+            // Start with no graphics active for testing
+            activeGraphics = [];
             
             updateGraphics();
             updateRegions();
@@ -784,8 +755,11 @@
         // Update graphics display
         function updateGraphics() {
             const container = document.getElementById('graphics-output');
+            
+            // Remove all existing graphics
             container.innerHTML = '';
 
+            // Create and show active graphics
             activeGraphics.forEach(graphicId => {
                 const graphic = createGraphic(graphicId);
                 if (graphic) {
@@ -797,6 +771,8 @@
                     }, 50);
                 }
             });
+
+            console.log('Graphics updated. Active:', activeGraphics);
         }
 
         // Create graphic element
@@ -817,6 +793,7 @@
                 case 'fullscreen-intro':
                     return createFullscreenIntro();
                 default:
+                    console.warn('Unknown graphic ID:', graphicId);
                     return null;
             }
         }
@@ -825,7 +802,7 @@
         function createTopBar() {
             const data = graphicsData.topBar || defaultGraphicsData.topBar;
             const div = document.createElement('div');
-            div.className = 'top-bar slide-in-top';
+            div.className = 'graphic top-bar';
             
             div.innerHTML = `
                 <div class="top-bar-left">
@@ -844,7 +821,7 @@
         function createCornerLogo() {
             const data = graphicsData.logo || defaultGraphicsData.logo;
             const div = document.createElement('div');
-            div.className = 'corner-logo scale-in';
+            div.className = 'graphic corner-logo';
             
             div.innerHTML = `
                 <div class="corner-logo-icon">${data.icon}</div>
@@ -858,7 +835,7 @@
         function createScoreBox() {
             const data = graphicsData.score || defaultGraphicsData.score;
             const div = document.createElement('div');
-            div.className = 'score-box slide-in-right';
+            div.className = 'graphic score-box';
             
             div.innerHTML = `
                 <div class="score-header">
@@ -884,7 +861,7 @@
         function createSocialCard() {
             const data = graphicsData.social || defaultGraphicsData.social;
             const div = document.createElement('div');
-            div.className = 'social-card slide-in-right';
+            div.className = 'graphic social-card';
             
             div.innerHTML = `
                 <div class="social-header"></div>
@@ -910,7 +887,7 @@
         function createLowerThird() {
             const data = graphicsData.lowerThird || defaultGraphicsData.lowerThird;
             const div = document.createElement('div');
-            div.className = 'lower-third slide-in-left';
+            div.className = 'graphic lower-third';
             
             div.innerHTML = `
                 <div class="lower-third-content">
@@ -929,11 +906,11 @@
             return div;
         }
 
-        // Create news ticker graphic - RESPONSIVE POSITIONING
+        // Create news ticker graphic - FIXED VISIBILITY SYSTEM
         function createNewsTicker() {
             const data = graphicsData.ticker || defaultGraphicsData.ticker;
             const div = document.createElement('div');
-            div.className = 'news-ticker slide-in-bottom';
+            div.className = 'graphic news-ticker';
             
             // Cycle through ticker items
             let currentIndex = 0;
@@ -964,7 +941,7 @@
         function createFullscreenIntro() {
             const data = graphicsData.fullscreen || defaultGraphicsData.fullscreen;
             const div = document.createElement('div');
-            div.className = 'fullscreen-intro fade-in';
+            div.className = 'graphic fullscreen-intro';
             
             div.innerHTML = `
                 <div class="fullscreen-logo">${data.logo}</div>
@@ -999,6 +976,12 @@
                     updateRegions();
                     updateDebugPanel();
                     break;
+                case 'h':
+                    // Hide all graphics
+                    activeGraphics = [];
+                    updateGraphics();
+                    updateDebugPanel();
+                    break;
                 case '1':
                     toggleGraphic('top-bar');
                     break;
@@ -1020,12 +1003,17 @@
             }
         });
 
-        // Toggle graphic function
+        // Toggle graphic function - FIXED VISIBILITY SYSTEM
         function toggleGraphic(graphicId) {
-            if (activeGraphics.includes(graphicId)) {
-                activeGraphics = activeGraphics.filter(id => id !== graphicId);
+            const index = activeGraphics.indexOf(graphicId);
+            if (index > -1) {
+                // Remove graphic
+                activeGraphics.splice(index, 1);
+                console.log('Hiding graphic:', graphicId);
             } else {
+                // Add graphic
                 activeGraphics.push(graphicId);
+                console.log('Showing graphic:', graphicId);
             }
             updateGraphics();
             updateDebugPanel();
@@ -1037,9 +1025,65 @@
         // Initialize the application
         document.addEventListener('DOMContentLoaded', () => {
             console.log('DOM loaded, initializing graphics system...');
+            
+            // Listen for messages from control panels
+            window.addEventListener('message', (event) => {
+                if (event.data && event.data.action) {
+                    handleControlMessage(event.data.action, event.data.data);
+                }
+            });
+
+            // Listen for localStorage changes (cross-tab communication)
+            window.addEventListener('storage', (event) => {
+                if (event.key === 'broadcast-control' && event.newValue) {
+                    try {
+                        const message = JSON.parse(event.newValue);
+                        handleControlMessage(message.action, message.data);
+                    } catch (e) {
+                        console.warn('Failed to parse control message:', e);
+                    }
+                }
+            });
+
+            // Notify control panels that graphics are ready
+            if (window.opener) {
+                try {
+                    window.opener.postMessage({ action: 'graphicsReady' }, '*');
+                } catch (e) {
+                    console.warn('Could not notify opener:', e);
+                }
+            }
+
             initializeNodeCG();
             updateDebugPanel();
         });
+
+        // Handle messages from control panels
+        function handleControlMessage(action, data) {
+            console.log('Received control message:', action, data);
+            
+            switch (action) {
+                case 'updateActiveGraphics':
+                    if (Array.isArray(data)) {
+                        activeGraphics = [...data];
+                        updateGraphics();
+                        updateDebugPanel();
+                    }
+                    break;
+                    
+                case 'toggleRegions':
+                    showRegions = Boolean(data);
+                    updateRegions();
+                    updateDebugPanel();
+                    break;
+                    
+                case 'toggleGraphic':
+                    if (data && data.graphicId) {
+                        toggleGraphic(data.graphicId);
+                    }
+                    break;
+            }
+        }
 
         // Log system info
         console.log('Flowics-style Graphics System Loaded');
@@ -1047,7 +1091,9 @@
         console.log('D - Toggle debug panel');
         console.log('T - Toggle news ticker');
         console.log('R - Toggle regions');
+        console.log('H - Hide all graphics');
         console.log('1-6 - Toggle individual graphics');
+        console.log('Graphics system ready for control panel communication');
     </script>
 </body>
 </html>

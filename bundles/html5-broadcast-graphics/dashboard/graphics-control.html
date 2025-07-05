@@ -246,12 +246,54 @@
             color: #00ff88;
             background: rgba(0, 255, 136, 0.1);
         }
+
+        .status-display {
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid #00ff88;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 24px;
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .status-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .status-label {
+            opacity: 0.8;
+        }
+
+        .status-value {
+            font-weight: 600;
+            color: #00ff88;
+        }
     </style>
 </head>
 <body>
     <div class="control-header">
         <div class="control-title">Flowics Graphics Control</div>
         <div style="font-size: 12px; opacity: 0.7;">NodeCG Bundle v1.0</div>
+    </div>
+
+    <div class="status-display">
+        <div class="status-item">
+            <span class="status-label">NodeCG Status:</span>
+            <span class="status-value" id="nodecg-status">Connecting...</span>
+        </div>
+        <div class="status-item">
+            <span class="status-label">Active Graphics:</span>
+            <span class="status-value" id="active-count">0</span>
+        </div>
+        <div class="status-item">
+            <span class="status-label">Current Scene:</span>
+            <span class="status-value" id="current-scene">None</span>
+        </div>
     </div>
 
     <div class="utility-buttons">
@@ -272,6 +314,7 @@
     </div>
 
     <script>
+        // Graphics configuration
         const graphics = [
             { 
                 id: 'top-bar', 
@@ -324,8 +367,38 @@
             }
         ];
 
-        const activeGraphics = nodecg.Replicant('activeGraphics');
-        const showRegions = nodecg.Replicant('showRegions');
+        // NodeCG Replicants
+        let activeGraphicsRep, showRegionsRep, currentSceneRep;
+
+        // Wait for NodeCG to be ready
+        if (typeof nodecg !== 'undefined') {
+            nodecg.readyReplicants(['activeGraphics', 'showRegions', 'currentScene']).then(() => {
+                console.log('NodeCG replicants ready');
+                
+                // Initialize replicants
+                activeGraphicsRep = nodecg.Replicant('activeGraphics');
+                showRegionsRep = nodecg.Replicant('showRegions');
+                currentSceneRep = nodecg.Replicant('currentScene');
+
+                // Set up listeners
+                activeGraphicsRep.on('change', updateButtonStates);
+                showRegionsRep.on('change', updateRegionsButton);
+                currentSceneRep.on('change', updateCurrentScene);
+
+                // Initial update
+                updateButtonStates(activeGraphicsRep.value);
+                updateRegionsButton(showRegionsRep.value);
+                updateCurrentScene(currentSceneRep.value);
+
+                document.getElementById('nodecg-status').textContent = 'Connected';
+            }).catch(error => {
+                console.error('NodeCG initialization failed:', error);
+                document.getElementById('nodecg-status').textContent = 'Error';
+            });
+        } else {
+            console.error('NodeCG not available');
+            document.getElementById('nodecg-status').textContent = 'Not Available';
+        }
 
         // Create graphics buttons
         const gridContainer = document.getElementById('graphics-grid');
@@ -344,75 +417,109 @@
             `;
             
             button.addEventListener('click', () => {
-                const isActive = button.classList.contains('active');
-                nodecg.sendMessage('toggleGraphic', {
-                    graphicId: graphic.id,
-                    isVisible: !isActive
-                });
+                toggleGraphic(graphic.id);
             });
             
             gridContainer.appendChild(button);
         });
 
-        // Update button states when replicant changes
-        activeGraphics.on('change', (newValue) => {
+        // Toggle graphic function
+        function toggleGraphic(graphicId) {
+            if (!activeGraphicsRep) {
+                console.warn('NodeCG not ready');
+                return;
+            }
+
+            const currentGraphics = activeGraphicsRep.value || [];
+            const isActive = currentGraphics.includes(graphicId);
+            
+            if (isActive) {
+                // Remove graphic
+                activeGraphicsRep.value = currentGraphics.filter(id => id !== graphicId);
+            } else {
+                // Add graphic
+                activeGraphicsRep.value = [...currentGraphics, graphicId];
+            }
+            
+            console.log('Toggled graphic:', graphicId, 'Active:', activeGraphicsRep.value);
+        }
+
+        // Update button states
+        function updateButtonStates(activeGraphics) {
+            const graphics = activeGraphics || [];
             const buttons = document.querySelectorAll('.graphic-button');
+            
             buttons.forEach(button => {
                 const graphicId = button.dataset.graphicId;
-                if (newValue && newValue.includes(graphicId)) {
+                if (graphics.includes(graphicId)) {
                     button.classList.add('active');
                 } else {
                     button.classList.remove('active');
                 }
             });
+            
+            document.getElementById('active-count').textContent = graphics.length;
+        }
+
+        // Update regions button
+        function updateRegionsButton(showRegions) {
+            const button = document.getElementById('toggle-regions');
+            button.classList.toggle('active', showRegions);
+            button.textContent = showRegions ? 'Hide Regions' : 'Show Regions';
+        }
+
+        // Update current scene display
+        function updateCurrentScene(sceneId) {
+            const sceneNames = {
+                'intro': 'Show Introduction',
+                'main-coverage': 'Main Coverage',
+                'social-segment': 'Social Media Segment',
+                'lower-third-info': 'Information Display',
+                'full-graphics': 'Full Graphics Suite'
+            };
+            
+            const sceneName = sceneId && sceneNames[sceneId] ? sceneNames[sceneId] : 'None';
+            document.getElementById('current-scene').textContent = sceneName;
+        }
+
+        // Utility button handlers
+        document.getElementById('toggle-regions').addEventListener('click', () => {
+            if (showRegionsRep) {
+                showRegionsRep.value = !showRegionsRep.value;
+            }
         });
 
-        // Regions toggle
-        const regionsButton = document.getElementById('toggle-regions');
-        regionsButton.addEventListener('click', () => {
-            const current = showRegions.value || false;
-            nodecg.sendMessage('toggleRegions', !current);
-        });
-
-        showRegions.on('change', (newValue) => {
-            regionsButton.classList.toggle('active', newValue);
-            regionsButton.textContent = newValue ? 'Hide Regions' : 'Show Regions';
-        });
-
-        // Clear all button
         document.getElementById('clear-all').addEventListener('click', () => {
-            nodecg.sendMessage('setScene', null);
+            if (activeGraphicsRep) {
+                activeGraphicsRep.value = [];
+            }
+            if (currentSceneRep) {
+                currentSceneRep.value = null;
+            }
         });
 
-        // Show all button
+        document.getElementById('preview-mode').addEventListener('click', () => {
+            window.open('/bundles/html5-broadcast-graphics/graphics/', '_blank');
+        });
+
+        // Quick action handlers
         document.getElementById('show-all').addEventListener('click', () => {
-            graphics.forEach(graphic => {
-                nodecg.sendMessage('toggleGraphic', {
-                    graphicId: graphic.id,
-                    isVisible: true
-                });
-            });
+            if (activeGraphicsRep) {
+                activeGraphicsRep.value = graphics.map(g => g.id);
+            }
         });
 
-        // Hide all button
         document.getElementById('hide-all').addEventListener('click', () => {
-            graphics.forEach(graphic => {
-                nodecg.sendMessage('toggleGraphic', {
-                    graphicId: graphic.id,
-                    isVisible: false
-                });
-            });
+            if (activeGraphicsRep) {
+                activeGraphicsRep.value = [];
+            }
         });
 
-        // Refresh button
         document.getElementById('refresh').addEventListener('click', () => {
             location.reload();
         });
 
-        // Preview mode button
-        document.getElementById('preview-mode').addEventListener('click', () => {
-            window.open('/bundles/html5-broadcast-graphics/graphics/', '_blank');
-        });
+        console.log('Graphics Control Panel initialized');
     </script>
 </body>
 </html>
