@@ -958,23 +958,15 @@
             let currentIndex = 0;
             const items = data.items || ['News Update'];
             
+            // Join all items with *** separator for continuous scrolling
+            const tickerText = items.join(' *** ');
+            
             div.innerHTML = `
                 <div class="ticker-label">NEWS UPDATE</div>
                 <div class="ticker-content">
-                    <div class="ticker-text">${items[currentIndex]}</div>
+                    <div class="ticker-text">${tickerText}</div>
                 </div>
             `;
-            
-            // Auto-cycle ticker items
-            if (items.length > 1) {
-                setInterval(() => {
-                    currentIndex = (currentIndex + 1) % items.length;
-                    const tickerText = div.querySelector('.ticker-text');
-                    if (tickerText) {
-                        tickerText.textContent = items[currentIndex];
-                    }
-                }, 8000);
-            }
             
             return div;
         }

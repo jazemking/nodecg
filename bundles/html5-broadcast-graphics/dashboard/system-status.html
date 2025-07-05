@@ -105,6 +105,14 @@
     </div>
 
     <div class="data-editor">
+        <input type="file" class="data-input" id="ticker-file" accept=".txt" style="margin-bottom: 8px;">
+        <button class="update-button" id="upload-ticker">Upload News Ticker File</button>
+        <div style="font-size: 11px; color: #6b7280; margin-top: 4px;">
+            Upload a .txt file with one news item per line
+        </div>
+    </div>
+
+    <div class="data-editor">
         <input type="text" class="data-input" id="home-team" placeholder="Home Team">
         <input type="number" class="data-input" id="home-score" placeholder="Home Score">
         <input type="text" class="data-input" id="away-team" placeholder="Away Team">
@@ -165,6 +173,40 @@
                 // Clear inputs
                 document.getElementById('lower-third-title').value = '';
                 document.getElementById('lower-third-subtitle').value = '';
+            }
+        });
+
+        // Ticker file upload handler
+        document.getElementById('upload-ticker').addEventListener('click', () => {
+            const fileInput = document.getElementById('ticker-file');
+            const file = fileInput.files[0];
+            
+            if (file && file.type === 'text/plain') {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const content = e.target.result;
+                    const newsItems = content
+                        .split('\n')
+                        .map(line => line.trim())
+                        .filter(line => line.length > 0);
+                    
+                    if (newsItems.length > 0) {
+                        nodecg.sendMessage('updateGraphicData', {
+                            type: 'ticker',
+                            updates: {
+                                items: newsItems
+                            }
+                        });
+                        
+                        alert(`Uploaded ${newsItems.length} news items successfully!`);
+                        fileInput.value = ''; // Clear the input
+                    } else {
+                        alert('No valid news items found in the file.');
+                    }
+                };
+                reader.readAsText(file);
+            } else {
+                alert('Please select a valid .txt file.');
             }
         });
 

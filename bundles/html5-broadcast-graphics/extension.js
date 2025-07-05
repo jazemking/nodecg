@@ -1,5 +1,8 @@
 'use strict';
 
+const fs = require('fs');
+const path = require('path');
+
 module.exports = function (nodecg) {
   // Replicants for shared state
   const activeGraphics = nodecg.Replicant('activeGraphics', { defaultValue: [] });
@@ -53,6 +56,54 @@ module.exports = function (nodecg) {
       }
     }
   });
+
+  // Function to read news ticker from file
+  function loadNewsTickerFromFile() {
+    try {
+      const tickerFilePath = path.join(__dirname, 'newsticker.txt');
+      const fileContent = fs.readFileSync(tickerFilePath, 'utf8');
+      const newsItems = fileContent
+        .split('\n')
+        .map(line => line.trim())
+        .filter(line => line.length > 0);
+      
+      if (newsItems.length > 0) {
+        const current = graphicsData.value;
+        graphicsData.value = {
+          ...current,
+          ticker: {
+            items: newsItems
+          }
+        };
+        nodecg.log.info(`Loaded ${newsItems.length} news items from newsticker.txt`);
+      }
+    } catch (error) {
+      nodecg.log.warn('Could not load newsticker.txt:', error.message);
+    }
+  }
+
+  // Watch for changes to the newsticker.txt file
+  function watchNewsTickerFile() {
+    const tickerFilePath = path.join(__dirname, 'newsticker.txt');
+    
+    try {
+      fs.watchFile(tickerFilePath, (curr, prev) => {
+        if (curr.mtime !== prev.mtime) {
+          nodecg.log.info('newsticker.txt file changed, reloading...');
+          loadNewsTickerFromFile();
+        }
+      });
+      nodecg.log.info('Watching newsticker.txt for changes');
+    } catch (error) {
+      nodecg.log.warn('Could not watch newsticker.txt:', error.message);
+    }
+  }
+
+  // Load initial news ticker data
+  loadNewsTickerFromFile();
+  
+  // Start watching the file for changes
+  watchNewsTickerFile();
 
   // Message handlers for dashboard communication
   nodecg.listenFor('toggleGraphic', (data) => {
