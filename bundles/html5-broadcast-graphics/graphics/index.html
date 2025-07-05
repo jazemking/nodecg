@@ -755,28 +755,66 @@
 
         // Update graphics display
         function updateGraphics() {
-            const container = document.getElementById('graphics-output');
-            
-            // Remove all existing graphics
-            container.innerHTML = '';
-
             console.log('Updating graphics. Active graphics:', activeGraphics);
-
-            // Create and show active graphics
-            activeGraphics.forEach(graphicId => {
-                const graphic = createGraphic(graphicId);
-                if (graphic) {
-                    container.appendChild(graphic);
-                    
-                    // Add visible class immediately for NodeCG mode
-                    setTimeout(() => {
-                        graphic.classList.add('visible');
-                        console.log('Made graphic visible:', graphicId);
-                    }, 10);
+            
+            // Get all possible graphic IDs
+            const allGraphicIds = ['top-bar', 'corner-logo', 'score-box', 'social-card', 'lower-third', 'news-ticker', 'fullscreen-intro'];
+            
+            allGraphicIds.forEach(graphicId => {
+                const shouldBeVisible = activeGraphics.includes(graphicId);
+                const existingElement = document.querySelector(`[data-graphic-id="${graphicId}"]`);
+                
+                if (shouldBeVisible && !existingElement) {
+                    // Create and show graphic
+                    showGraphic(graphicId);
+                } else if (!shouldBeVisible && existingElement) {
+                    // Hide and remove graphic
+                    hideGraphic(graphicId);
+                } else if (shouldBeVisible && existingElement) {
+                    // Graphic already exists and should be visible - ensure it's visible
+                    if (!existingElement.classList.contains('visible')) {
+                        existingElement.classList.add('visible');
+                        console.log('Made existing graphic visible:', graphicId);
+                    }
                 }
             });
+            
+            console.log('Graphics update complete. Total active graphics:', activeGraphics.length);
+        }
 
-            console.log('Graphics update complete. Total graphics rendered:', activeGraphics.length);
+        // Show individual graphic
+        function showGraphic(graphicId) {
+            const container = document.getElementById('graphics-output');
+            const graphic = createGraphic(graphicId);
+            
+            if (graphic) {
+                graphic.setAttribute('data-graphic-id', graphicId);
+                container.appendChild(graphic);
+                
+                // Trigger animation after a short delay
+                setTimeout(() => {
+                    graphic.classList.add('visible');
+                    console.log('Showed graphic:', graphicId);
+                }, 50);
+            }
+        }
+
+        // Hide individual graphic
+        function hideGraphic(graphicId) {
+            const existingElement = document.querySelector(`[data-graphic-id="${graphicId}"]`);
+            
+            if (existingElement) {
+                existingElement.classList.remove('visible');
+                console.log('Hiding graphic:', graphicId);
+                
+                // Remove element after animation completes
+                setTimeout(() => {
+                    if (existingElement.parentNode) {
+                        existingElement.parentNode.removeChild(existingElement);
+                        console.log('Removed graphic element:', graphicId);
+                    }
+                }, 700); // Match the CSS transition duration
+            }
         }
 
         // Create graphic element
