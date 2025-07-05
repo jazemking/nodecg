@@ -89,6 +89,18 @@ module.exports = function (nodecg) {
     }
   });
 
+  // Log replicant changes for debugging
+  activeGraphics.on('change', (newValue, oldValue) => {
+    nodecg.log.info(`Active graphics changed from [${oldValue}] to [${newValue}]`);
+  });
+
+  currentScene.on('change', (newValue, oldValue) => {
+    nodecg.log.info(`Current scene changed from "${oldValue}" to "${newValue}"`);
+  });
+
+  showRegions.on('change', (newValue, oldValue) => {
+    nodecg.log.info(`Show regions changed from ${oldValue} to ${newValue}`);
+  });
   nodecg.listenFor('updateGraphicData', (data) => {
     const { type, updates } = data;
     const current = graphicsData.value;

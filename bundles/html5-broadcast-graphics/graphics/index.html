@@ -664,47 +664,48 @@
                     console.log('NodeCG detected, initializing replicants...');
                     isNodeCGMode = true;
                     
-                    // Wait for NodeCG to be ready
-                    nodecg.readyReplicants(['activeGraphics', 'showRegions', 'graphicsData']).then(() => {
-                        console.log('NodeCG replicants ready');
-                        
-                        const activeGraphicsRep = nodecg.Replicant('activeGraphics');
-                        const showRegionsRep = nodecg.Replicant('showRegions');
-                        const graphicsDataRep = nodecg.Replicant('graphicsData');
+                    // Initialize replicants directly
+                    const activeGraphicsRep = nodecg.Replicant('activeGraphics');
+                    const showRegionsRep = nodecg.Replicant('showRegions');
+                    const graphicsDataRep = nodecg.Replicant('graphicsData');
 
-                        // Set up replicant listeners
-                        activeGraphicsRep.on('change', (newValue) => {
-                            console.log('Active graphics changed:', newValue);
-                            activeGraphics = newValue || [];
-                            updateGraphics();
-                            updateDebugPanel();
-                        });
+                    // Set up replicant listeners
+                    activeGraphicsRep.on('change', (newValue) => {
+                        console.log('Active graphics changed:', newValue);
+                        activeGraphics = newValue || [];
+                        updateGraphics();
+                        updateDebugPanel();
+                    });
 
-                        showRegionsRep.on('change', (newValue) => {
-                            console.log('Show regions changed:', newValue);
-                            showRegions = newValue || false;
-                            updateRegions();
-                            updateDebugPanel();
-                        });
+                    showRegionsRep.on('change', (newValue) => {
+                        console.log('Show regions changed:', newValue);
+                        showRegions = newValue || false;
+                        updateRegions();
+                        updateDebugPanel();
+                    });
 
-                        graphicsDataRep.on('change', (newValue) => {
-                            console.log('Graphics data changed:', newValue);
-                            graphicsData = { ...defaultGraphicsData, ...newValue };
-                            updateGraphics();
-                        });
+                    graphicsDataRep.on('change', (newValue) => {
+                        console.log('Graphics data changed:', newValue);
+                        graphicsData = { ...defaultGraphicsData, ...newValue };
+                        updateGraphics();
+                    });
 
-                        // Set initial values
+                    // Set initial values when replicants are ready
+                    setTimeout(() => {
                         activeGraphics = activeGraphicsRep.value || [];
                         showRegions = showRegionsRep.value || false;
                         graphicsData = { ...defaultGraphicsData, ...(graphicsDataRep.value || {}) };
                         
+                        console.log('Initial NodeCG state loaded:', {
+                            activeGraphics,
+                            showRegions,
+                            graphicsData: Object.keys(graphicsData)
+                        });
+                        
                         updateGraphics();
                         updateRegions();
                         updateDebugPanel();
-                    }).catch(error => {
-                        console.error('Error initializing NodeCG replicants:', error);
-                        initializeStandalone();
-                    });
+                    }, 100);
                 } else {
                     console.log('NodeCG not available, running in standalone mode');
                     initializeStandalone();
@@ -759,20 +760,23 @@
             // Remove all existing graphics
             container.innerHTML = '';
 
+            console.log('Updating graphics. Active graphics:', activeGraphics);
+
             // Create and show active graphics
             activeGraphics.forEach(graphicId => {
                 const graphic = createGraphic(graphicId);
                 if (graphic) {
                     container.appendChild(graphic);
                     
-                    // Trigger animation after a short delay
+                    // Add visible class immediately for NodeCG mode
                     setTimeout(() => {
                         graphic.classList.add('visible');
-                    }, 50);
+                        console.log('Made graphic visible:', graphicId);
+                    }, 10);
                 }
             });
 
-            console.log('Graphics updated. Active:', activeGraphics);
+            console.log('Graphics update complete. Total graphics rendered:', activeGraphics.length);
         }
 
         // Create graphic element

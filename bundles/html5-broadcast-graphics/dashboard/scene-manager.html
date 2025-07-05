@@ -309,25 +309,25 @@
 
         // Wait for NodeCG to be ready
         if (typeof nodecg !== 'undefined') {
-            nodecg.readyReplicants(['activeGraphics', 'currentScene']).then(() => {
-                console.log('NodeCG replicants ready');
-                
-                // Initialize replicants
-                activeGraphicsRep = nodecg.Replicant('activeGraphics');
-                currentSceneRep = nodecg.Replicant('currentScene');
+            console.log('NodeCG detected, initializing replicants...');
+            
+            // Initialize replicants directly
+            activeGraphicsRep = nodecg.Replicant('activeGraphics');
+            currentSceneRep = nodecg.Replicant('currentScene');
 
-                // Set up listeners
-                currentSceneRep.on('change', updateSceneDisplay);
+            // Set up listeners
+            currentSceneRep.on('change', (newValue) => {
+                console.log('Current scene replicant changed:', newValue);
+                updateSceneDisplay(newValue);
+            });
 
-                // Initial update
+            // Initial update after a short delay
+            setTimeout(() => {
                 updateSceneDisplay(currentSceneRep.value);
                 updateStatus();
-
                 document.getElementById('nodecg-status').textContent = 'Connected';
-            }).catch(error => {
-                console.error('NodeCG initialization failed:', error);
-                document.getElementById('nodecg-status').textContent = 'Error';
-            });
+                console.log('Scene Manager ready');
+            }, 100);
         } else {
             console.error('NodeCG not available');
             document.getElementById('nodecg-status').textContent = 'Not Available';
@@ -368,6 +368,8 @@
                 return;
             }
 
+            console.log('Setting scene:', sceneId);
+            
             currentSceneRep.value = sceneId;
             
             if (sceneId) {

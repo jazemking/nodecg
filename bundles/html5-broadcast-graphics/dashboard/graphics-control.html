@@ -372,29 +372,37 @@
 
         // Wait for NodeCG to be ready
         if (typeof nodecg !== 'undefined') {
-            nodecg.readyReplicants(['activeGraphics', 'showRegions', 'currentScene']).then(() => {
-                console.log('NodeCG replicants ready');
-                
-                // Initialize replicants
-                activeGraphicsRep = nodecg.Replicant('activeGraphics');
-                showRegionsRep = nodecg.Replicant('showRegions');
-                currentSceneRep = nodecg.Replicant('currentScene');
+            console.log('NodeCG detected, initializing replicants...');
+            
+            // Initialize replicants directly
+            activeGraphicsRep = nodecg.Replicant('activeGraphics');
+            showRegionsRep = nodecg.Replicant('showRegions');
+            currentSceneRep = nodecg.Replicant('currentScene');
 
-                // Set up listeners
-                activeGraphicsRep.on('change', updateButtonStates);
-                showRegionsRep.on('change', updateRegionsButton);
-                currentSceneRep.on('change', updateCurrentScene);
+            // Set up listeners
+            activeGraphicsRep.on('change', (newValue) => {
+                console.log('Active graphics replicant changed:', newValue);
+                updateButtonStates(newValue);
+            });
+            
+            showRegionsRep.on('change', (newValue) => {
+                console.log('Show regions replicant changed:', newValue);
+                updateRegionsButton(newValue);
+            });
+            
+            currentSceneRep.on('change', (newValue) => {
+                console.log('Current scene replicant changed:', newValue);
+                updateCurrentScene(newValue);
+            });
 
-                // Initial update
+            // Initial update after a short delay
+            setTimeout(() => {
                 updateButtonStates(activeGraphicsRep.value);
                 updateRegionsButton(showRegionsRep.value);
                 updateCurrentScene(currentSceneRep.value);
-
                 document.getElementById('nodecg-status').textContent = 'Connected';
-            }).catch(error => {
-                console.error('NodeCG initialization failed:', error);
-                document.getElementById('nodecg-status').textContent = 'Error';
-            });
+                console.log('Graphics Control Panel ready');
+            }, 100);
         } else {
             console.error('NodeCG not available');
             document.getElementById('nodecg-status').textContent = 'Not Available';
@@ -433,15 +441,19 @@
             const currentGraphics = activeGraphicsRep.value || [];
             const isActive = currentGraphics.includes(graphicId);
             
+            console.log('Toggling graphic:', graphicId, 'Currently active:', isActive);
+            
             if (isActive) {
                 // Remove graphic
                 activeGraphicsRep.value = currentGraphics.filter(id => id !== graphicId);
+                console.log('Removed graphic:', graphicId);
             } else {
                 // Add graphic
                 activeGraphicsRep.value = [...currentGraphics, graphicId];
+                console.log('Added graphic:', graphicId);
             }
             
-            console.log('Toggled graphic:', graphicId, 'Active:', activeGraphicsRep.value);
+            console.log('New active graphics:', activeGraphicsRep.value);
         }
 
         // Update button states
